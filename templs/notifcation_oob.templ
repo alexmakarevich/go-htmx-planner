@@ -1,0 +1,14 @@
+package templs
+
+templ NotificationOob(status NotificationType) {
+	<div style="padding:2rem" id="notification" hx-swap-oob="true" class={ getColor(status) + " auto-hide" }>
+		switch status {
+			case Success:
+				Success!    
+			case BadReq:
+				Bad request 
+			default:
+				WTF 
+		}
+	</div>
+}

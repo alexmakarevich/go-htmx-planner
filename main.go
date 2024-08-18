@@ -151,6 +151,20 @@ func main() {
 		c.HTML(http.StatusOK, "event", templs.Page(templs.Event(ev)))
 	})
 
+	server.DELETE("/event/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		var ev entities.CalendarEvent
+		res := db.Delete(&ev, id)
+		if res.Error != nil {
+			log.Println("Nooooooooo")
+			log.Println(res.Error)
+			simpleRender(templs.Notification(templs.BadReq))(c)
+		} else {
+			// c.Data(200, gin.MIMEHTML, nil)
+			simpleRender(templs.NotificationOob(templs.Success))(c)
+		}
+	})
+
 	server.Run("localhost:9999")
 
 }
