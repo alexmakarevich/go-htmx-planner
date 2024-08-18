@@ -18,3 +18,17 @@
     display: none;
   }
 }
+
+.main-menu {
+  display: flex;
+  background-color: dark-gray;
+}
+
+.main-menu > li {
+  list-style: none;
+  padding: 1rem;
+}
+
+.main-menu a {
+  text-decoration: none;
+}

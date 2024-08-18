@@ -8,10 +8,23 @@ templ Page(content templ.Component) {
 			<meta name="viewport" content="width=devide-width, initial-scale=1"/>
 			<title>GGForm</title>
 			<script src="../public/htmx.min.js"></script>
+			<link rel="stylesheet" href="../public/pico.yellow.css"/>
 			<link rel="stylesheet" href="../public/style.css"/>
 		</head>
-		<body style="display:flex">
-			@content
+		<body>
+			<header>
+				<menu class="main-menu">
+					<li>
+						<a href="/">home</a>
+					</li>
+					<li>
+						<a href="/events">events</a>
+					</li>
+				</menu>
+			</header>
+			<article>
+				@content
+			</article>
 			<section
 				style="position:absolute;display:flex;bottom:0;left:0;width:100%;z-index:1000;
 				box-sizing:border-box;justify-content: center"

@@ -43,6 +43,12 @@ func simpleRender(tc templ.Component) func(c *gin.Context) {
 	}
 }
 
+func renderPage(tc templ.Component) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "Home", templs.Page(tc))
+	}
+}
+
 func main() {
 	fmt.Println("kek")
 
@@ -84,7 +90,7 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
-	server.GET("/", simpleRender(templs.Page(templs.Home())))
+	server.GET("/", renderPage(templs.Home()))
 
 	server.GET("/createEvent", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
@@ -94,7 +100,7 @@ func main() {
 
 	server.GET("/events", func(c *gin.Context) {
 		db.Find(&events)
-		simpleRender(templs.EventList(&events))(c)
+		renderPage(templs.EventList(&events))(c)
 	})
 
 	type NewEventData struct {
