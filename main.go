@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -44,15 +43,15 @@ func main() {
 		panic("failed to connect to database")
 	}
 
-	db.AutoMigrate(&entities.CalendarEvent{})
+	// db.AutoMigrate(&entities.CalendarEvent{})
 	// db.Where("1 = 1").Delete(&entities.CalendarEvent{})
 
-	res := db.Create(entities.NewCalendarEvent("Pizza", time.Now()))
+	// res := db.Create(entities.NewCalendarEvent("Pizza", time.Now()))
 	// res := db.Create(&CalendarEvent{})
 
-	if res.Error != nil {
-		log.Fatal(res.Error)
-	}
+	// if res.Error != nil {
+	// 	log.Fatal(res.Error)
+	// }
 
 	var ev entities.CalendarEvent
 
@@ -68,6 +67,7 @@ func main() {
 	fmt.Println("kek+")
 
 	server := gin.Default()
+	server.Static("/public", "./public")
 	// server.LoadHTMLFiles("./templs/event.html")
 
 	ginHtmlRenderer := server.HTMLRender
@@ -77,8 +77,36 @@ func main() {
 	server.SetTrustedProxies(nil)
 
 	server.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "Home", templs.Home())
+		c.HTML(http.StatusOK, "Home", templs.Page(templs.Home()))
 	})
+
+	server.GET("/createEvent", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
+	})
+
+	type NewEventData struct {
+		Title string `form:"title"`
+	}
+
+	server.POST("/createEvent", func(c *gin.Context) {
+		var newEvent NewEventData
+		err := c.ShouldBind(&newEvent)
+		if err != nil {
+			fmt.Println(err)
+			// if i want to send a negative status, I'll need to intercept in in the browser
+			c.HTML(200, "", templs.Notification(templs.BadReq))
+			return
+		} else {
+			println("succ")
+			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+		}
+
+	})
+
+	// thots
+	// server.POST("/api/v1/createEvent", func(c *gin.Context) {
+	// 	c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
+	// })
 
 	server.GET("/event/:id", func(c *gin.Context) {
 		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -90,9 +118,9 @@ func main() {
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
-		c.HTML(http.StatusOK, "event", templs.Event(ev))
+		c.HTML(http.StatusOK, "event", templs.Page(templs.Event(ev)))
 	})
 
-	server.Run("localhost:1989")
+	server.Run("localhost:9999")
 
 }

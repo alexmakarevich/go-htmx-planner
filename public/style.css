@@ -1,0 +1,20 @@
+:root {
+  box-sizing: border-box;
+}
+
+.red {
+  background-color: red;
+}
+.green {
+  background-color: green;
+}
+
+.auto-hide {
+  animation: basic-hide 3s forwards;
+}
+@keyframes basic-hide {
+  to {
+    opacity: 0;
+    display: none;
+  }
+}

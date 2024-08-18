@@ -1,0 +1,37 @@
+package templs
+
+type NotificationType int
+
+const (
+	Success NotificationType = iota
+	BadReq
+)
+
+const green string = "green"
+const red string = "red"
+const purple string = "green"
+
+func getColor(status NotificationType) string {
+	switch status {
+	case Success:
+		return green
+	case BadReq:
+		return red
+	default:
+		return purple
+
+	}
+}
+
+templ Notification(status NotificationType) {
+	<div style="padding:2rem" id="notification" class={ getColor(status) + " auto-hide" }>
+		switch status {
+			case Success:
+				Success!    
+			case BadReq:
+				Bad request 
+			default:
+				WTF 
+		}
+	</div>
+}

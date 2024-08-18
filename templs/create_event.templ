@@ -1,0 +1,13 @@
+package templs
+
+templ CreateEvent() {
+	<div>
+		<form
+			hx-post="/createEvent"
+			hx-target="#notification"
+		>
+			<input name="title" placeholder="title"/>
+			<button type="submit">create</button>
+		</form>
+	</div>
+}

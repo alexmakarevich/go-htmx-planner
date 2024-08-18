@@ -1,0 +1,24 @@
+package templs
+
+templ Page(content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=devide-width, initial-scale=1"/>
+			<title>GGForm</title>
+			<script src="../public/htmx.min.js"></script>
+			<link rel="stylesheet" href="../public/style.css"/>
+		</head>
+		<body style="display:flex">
+			@content
+			<section
+				style="position:absolute;display:flex;bottom:0;left:0;width:100%;z-index:1000;
+				box-sizing:border-box;justify-content: center"
+			>
+				// Notification Area
+				<div id="notification">default</div>
+			</section>
+		</body>
+	</html>
+}
