@@ -1,0 +1,13 @@
+package templs
+
+import "go-form/entities"
+
+templ EventList(events *[]entities.CalendarEvent) {
+	<ul>
+		for _, event := range *events {
+			<li>
+				@Event(event)
+			</li>
+		}
+	</ul>
+}

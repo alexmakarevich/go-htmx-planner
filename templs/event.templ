@@ -1,7 +1,10 @@
 package templs
 
-import "go-form/entities"
+import (
+	"go-form/entities"
+	"strconv"
+)
 
 templ Event(e entities.CalendarEvent) {
-	<div>{ e.Title }</div>
+	<div>{ strconv.FormatUint(uint64(e.ID), 10) } - { e.Title }</div>
 }

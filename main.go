@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"github.com/a-h/templ"
 	"github.com/a-h/templ/examples/integration-gin/gintemplrenderer"
 	"github.com/gin-gonic/gin"
 
@@ -35,6 +37,12 @@ func newParticipation(EventId uint, UserId uint) *Participation {
 	return &Participation{EventId: EventId, UserId: UserId}
 }
 
+func simpleRender(tc templ.Component) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "Home", tc)
+	}
+}
+
 func main() {
 	fmt.Println("kek")
 
@@ -46,7 +54,7 @@ func main() {
 	// db.AutoMigrate(&entities.CalendarEvent{})
 	// db.Where("1 = 1").Delete(&entities.CalendarEvent{})
 
-	// res := db.Create(entities.NewCalendarEvent("Pizza", time.Now()))
+	// res := db.Create(entities.NewCalendarEvent("Kepchuck", time.Now()))
 	// res := db.Create(&CalendarEvent{})
 
 	// if res.Error != nil {
@@ -76,12 +84,17 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
-	server.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "Home", templs.Page(templs.Home()))
-	})
+	server.GET("/", simpleRender(templs.Page(templs.Home())))
 
 	server.GET("/createEvent", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
+	})
+
+	var events []entities.CalendarEvent
+
+	server.GET("/events", func(c *gin.Context) {
+		db.Find(&events)
+		simpleRender(templs.EventList(&events))(c)
 	})
 
 	type NewEventData struct {
@@ -91,14 +104,25 @@ func main() {
 	server.POST("/createEvent", func(c *gin.Context) {
 		var newEvent NewEventData
 		err := c.ShouldBind(&newEvent)
+
 		if err != nil {
+			println("bad data")
 			fmt.Println(err)
 			// if i want to send a negative status, I'll need to intercept in in the browser
+			// TODO: txt in notif
 			c.HTML(200, "", templs.Notification(templs.BadReq))
-			return
 		} else {
-			println("succ")
-			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+			res := db.Create(entities.NewCalendarEvent(newEvent.Title, time.Now()))
+			if res.Error != nil {
+				println("bad db")
+				fmt.Println(res.Error)
+				// TODO: txt in notif
+				c.HTML(200, "", templs.Notification(templs.BadReq))
+			} else {
+				println("succ")
+				fmt.Println(newEvent.Title)
+				c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+			}
 		}
 
 	})
