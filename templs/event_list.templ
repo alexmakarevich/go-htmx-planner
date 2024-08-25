@@ -6,10 +6,15 @@ import (
 )
 
 templ EventList(events *[]entities.CalendarEvent) {
+	<a href="/createEvent">
+		<button>+ create</button>
+	</a>
 	<ul>
 		for _, event := range *events {
 			<li id={ "event-" + strconv.FormatUint(uint64(event.ID), 10) } style="list-style:none;display:flex;align-items: center;">
-				@Event(event)
+				<span style="padding:0 1rem">{ event.DateTime.Format("02 Jan 2006 - 03:04") }</span>
+				{ "    |    " }
+				<span style="padding:0 1rem">{ event.Title }</span>
 				// TODO: don't do the same conv twice?
 				<button style="margin-left:1rem" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(event.ID), 10) } hx-delete={ "/event/" + strconv.FormatUint(uint64(event.ID), 10) }>delete</button>
 			</li>

@@ -35,3 +35,9 @@ templ Notification(status NotificationType) {
 		}
 	</div>
 }
+
+templ NotificationWithText(status NotificationType, text string) {
+	<div style="padding:2rem" id="notification" class={ getColor(status) + " auto-hide" }>
+		{ text }
+	</div>
+}

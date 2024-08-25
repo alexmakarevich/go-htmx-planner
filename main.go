@@ -49,6 +49,11 @@ func renderPage(tc templ.Component) func(c *gin.Context) {
 	}
 }
 
+func ErrorNotification(c *gin.Context, text string) {
+	log.Println(text)
+	c.HTML(200, "", templs.NotificationWithText(templs.BadReq, text))
+}
+
 func main() {
 	fmt.Println("kek")
 
@@ -104,7 +109,8 @@ func main() {
 	})
 
 	type NewEventData struct {
-		Title string `form:"title"`
+		Title    string `form:"title" binding:"required"`
+		DateTime string `form:"date-time" binding:"required"`
 	}
 
 	server.POST("/createEvent", func(c *gin.Context) {
@@ -112,31 +118,41 @@ func main() {
 		err := c.ShouldBind(&newEvent)
 
 		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		newEventTime, err := time.Parse("2006-01-02T15:04", newEvent.DateTime)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		if err != nil {
 			println("bad data")
 			fmt.Println(err)
-			// if i want to send a negative status, I'll need to intercept in in the browser
+			c.HTML(200, "", templs.Notification(templs.BadReq))
+			return
+		}
+
+		println("title:")
+		println(newEvent.Title)
+		println("date:")
+		println(newEvent.DateTime)
+		res := db.Create(entities.NewCalendarEvent(newEvent.Title, newEventTime))
+		if res.Error != nil {
+			println("bad db")
+			fmt.Println(res.Error)
 			// TODO: txt in notif
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
-			res := db.Create(entities.NewCalendarEvent(newEvent.Title, time.Now()))
-			if res.Error != nil {
-				println("bad db")
-				fmt.Println(res.Error)
-				// TODO: txt in notif
-				c.HTML(200, "", templs.Notification(templs.BadReq))
-			} else {
-				println("succ")
-				fmt.Println(newEvent.Title)
-				c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
-			}
+			println("succ")
+			fmt.Println(newEvent.Title)
+			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 
 	})
-
-	// thots
-	// server.POST("/api/v1/createEvent", func(c *gin.Context) {
-	// 	c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
-	// })
 
 	server.GET("/event/:id", func(c *gin.Context) {
 		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)

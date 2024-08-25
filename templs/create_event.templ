@@ -9,7 +9,19 @@ templ CreateEvent() {
 			hx-post="/createEvent"
 			hx-target="#notification"
 		>
-			<input name="title" placeholder="title"/>
+			// hx-on::after-request="this.reset()"
+			// hx-ext="json-enc"
+			<input
+				name="title"
+				placeholder="title"
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The title must be at least 1 char long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
+			<input type="datetime-local" name="date-time"/>
 			<button type="submit">create</button>
 		</form>
 	</div>
