@@ -12,3 +12,9 @@ templ NotificationOob(status NotificationType) {
 		}
 	</div>
 }
+
+templ NotificationOobWithText(status NotificationType, text string) {
+	<div style="padding:2rem" id="notification" hx-swap-oob="true" class={ getColor(status) + " auto-hide" }>
+		{ text }
+	</div>
+}

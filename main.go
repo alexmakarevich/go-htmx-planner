@@ -18,6 +18,8 @@ import (
 	"go-form/templs"
 )
 
+// TODO: timezones
+
 type Participation struct {
 	gorm.Model
 	EventId uint `gorm:"not null"`
@@ -136,15 +138,10 @@ func main() {
 			return
 		}
 
-		println("title:")
-		println(newEvent.Title)
-		println("date:")
-		println(newEvent.DateTime)
 		res := db.Create(entities.NewCalendarEvent(newEvent.Title, newEventTime))
 		if res.Error != nil {
 			println("bad db")
 			fmt.Println(res.Error)
-			// TODO: txt in notif
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
@@ -178,6 +175,59 @@ func main() {
 		} else {
 			// c.Data(200, gin.MIMEHTML, nil)
 			simpleRender(templs.NotificationOob(templs.Success))(c)
+		}
+	})
+
+	server.GET("/updateEvent/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		var ev entities.CalendarEvent
+		res := db.Take(&ev, id)
+		if res.Error != nil {
+			log.Println("Nooooooooo")
+			log.Println(res.Error)
+			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
+			return
+		}
+		renderPage(templs.UpdateEvent(&ev))(c)
+	})
+
+	server.PUT("/event/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+		var newEvent NewEventData
+		err := c.ShouldBind(&newEvent)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		newEventTime, err := time.Parse("2006-01-02T15:04", newEvent.DateTime)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		if err != nil {
+			println("bad data")
+			fmt.Println(err)
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
+			return
+		}
+
+		updatedEvent := entities.NewCalendarEvent(newEvent.Title, newEventTime)
+		updatedEvent.ID = uint(id)
+
+		res := db.Save(&updatedEvent)
+		if res.Error != nil {
+			println(res.Error.Error())
+			fmt.Println(res.Error)
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
+		} else {
+			println("succ")
+			c.Header("HX-Redirect", "/events")
+			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
 		}
 	})
 

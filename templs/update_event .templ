@@ -1,0 +1,32 @@
+package templs
+
+import (
+	"go-form/entities"
+	"strconv"
+)
+
+templ UpdateEvent(event *entities.CalendarEvent) {
+	<h2>
+		Update Event
+	</h2>
+	<div>
+		<form
+			hx-put={ "/event/" + strconv.FormatUint(uint64(event.ID), 10) }
+			hx-swap="none"
+		>
+			<input
+				name="title"
+				placeholder="title"
+				value={ event.Title }
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The title must be at least 1 char long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
+			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
+			<button type="submit">update</button>
+		</form>
+	</div>
+}

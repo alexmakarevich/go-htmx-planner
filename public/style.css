@@ -38,3 +38,9 @@
 .main-menu a {
   text-decoration: none;
 }
+
+.delete {
+  background-color:rgb(158, 56, 56);
+  color:antiquewhite;
+  border: none;
+}
