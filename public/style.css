@@ -10,9 +10,15 @@
 }
 
 .auto-hide {
-  animation: basic-hide 3s forwards;
+  animation: basic-hide 10s forwards;
 }
 @keyframes basic-hide {
+  0%  {
+    opacity: 100%;
+  }
+  80% {
+    opacity: 100%;
+  }
   to {
     opacity: 0;
     display: none;
