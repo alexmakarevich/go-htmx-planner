@@ -1,0 +1,27 @@
+package templs
+
+templ CreateUser() {
+	<h2>
+		Create User
+	</h2>
+	<div>
+		<form
+			hx-post="/htmx/createUser"
+			hx-target="#notification"
+		>
+			// hx-on::after-request="this.reset()"
+			// hx-ext="json-enc"
+			<input
+				name="username"
+				placeholder="username"
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The username must be at least 1 char long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
+			<button type="submit">create</button>
+		</form>
+	</div>
+}

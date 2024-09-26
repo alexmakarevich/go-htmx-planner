@@ -20,25 +20,6 @@ import (
 
 // TODO: timezones
 
-type Participation struct {
-	gorm.Model
-	EventId uint `gorm:"not null"`
-	UserId  uint `gorm:"not null"`
-}
-
-type User struct {
-	gorm.Model
-	Name string `gorm:"not null"`
-}
-
-func newUser(Name string) *User {
-	return &User{Name: Name}
-}
-
-func newParticipation(EventId uint, UserId uint) *Participation {
-	return &Participation{EventId: EventId, UserId: UserId}
-}
-
 func simpleRender(tc templ.Component) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "Home", tc)
@@ -57,14 +38,14 @@ func ErrorNotification(c *gin.Context, text string) {
 }
 
 func main() {
-	fmt.Println("kek")
-
 	db, err := gorm.Open(sqlite.Open("db/dev.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
 	}
 
-	// db.AutoMigrate(&entities.CalendarEvent{})
+	db.AutoMigrate(&entities.CalendarEvent{})
+	db.AutoMigrate(&entities.User{})
+
 	// db.Where("1 = 1").Delete(&entities.CalendarEvent{})
 
 	// res := db.Create(entities.NewCalendarEvent("Kepchuck", time.Now()))
@@ -103,7 +84,12 @@ func main() {
 		c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
 	})
 
+	server.GET("/createUser", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "Create User", templs.Page(templs.CreateUser()))
+	})
+
 	var events []entities.CalendarEvent
+	var users []entities.User
 
 	server.GET("/events", func(c *gin.Context) {
 		db.Find(&events)
@@ -131,13 +117,6 @@ func main() {
 			return
 		}
 
-		if err != nil {
-			println("bad data")
-			fmt.Println(err)
-			c.HTML(200, "", templs.Notification(templs.BadReq))
-			return
-		}
-
 		res := db.Create(entities.NewCalendarEvent(newEvent.Title, newEventTime))
 		if res.Error != nil {
 			println("bad db")
@@ -147,6 +126,38 @@ func main() {
 			println("succ")
 			fmt.Println(newEvent.Title)
 			c.Header("HX-Redirect", "/events")
+			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+		}
+
+	})
+
+	server.GET("/users", func(c *gin.Context) {
+		db.Find(&users)
+		renderPage(templs.UserList(&users))(c)
+	})
+
+	type NewUserData struct {
+		UserName string `form:"username" binding:"required"`
+	}
+
+	server.POST("/htmx/createUser", func(c *gin.Context) {
+		var newUser NewUserData
+		err := c.ShouldBind(&newUser)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		res := db.Create(entities.NewUser(newUser.UserName))
+		if res.Error != nil {
+			println("bad db")
+			fmt.Println(res.Error)
+			c.HTML(200, "", templs.Notification(templs.BadReq))
+		} else {
+			println("succ")
+			fmt.Println(newUser.UserName)
+			c.Header("HX-Redirect", "/users")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 
@@ -207,13 +218,6 @@ func main() {
 
 		if err != nil {
 			ErrorNotification(c, err.Error())
-			return
-		}
-
-		if err != nil {
-			println("bad data")
-			fmt.Println(err)
-			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
 			return
 		}
 
