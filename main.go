@@ -115,7 +115,7 @@ func main() {
 		DateTime string `form:"date-time" binding:"required"`
 	}
 
-	server.POST("/createEvent", func(c *gin.Context) {
+	server.POST("/htmx/createEvent", func(c *gin.Context) {
 		var newEvent NewEventData
 		err := c.ShouldBind(&newEvent)
 
@@ -146,6 +146,7 @@ func main() {
 		} else {
 			println("succ")
 			fmt.Println(newEvent.Title)
+			c.Header("HX-Redirect", "/events")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 
@@ -164,7 +165,7 @@ func main() {
 		c.HTML(http.StatusOK, "event", templs.Page(templs.Event(ev)))
 	})
 
-	server.DELETE("/event/:id", func(c *gin.Context) {
+	server.DELETE("htmx/deleteEvent/:id", func(c *gin.Context) {
 		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 		var ev entities.CalendarEvent
 		res := db.Delete(&ev, id)
@@ -191,7 +192,7 @@ func main() {
 		renderPage(templs.UpdateEvent(&ev))(c)
 	})
 
-	server.PUT("/event/:id", func(c *gin.Context) {
+	server.PUT("/htmx/updateEvent/:id", func(c *gin.Context) {
 		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 		var newEvent NewEventData
@@ -231,6 +232,6 @@ func main() {
 		}
 	})
 
-	server.Run("localhost:9999")
+	server.Run("localhost:19999")
 
 }

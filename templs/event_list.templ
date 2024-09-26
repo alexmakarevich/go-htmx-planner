@@ -6,6 +6,7 @@ import (
 )
 
 templ EventList(events *[]entities.CalendarEvent) {
+	<h1>Events</h1>
 	<a href="/createEvent">
 		<button>+ create</button>
 	</a>
@@ -19,7 +20,7 @@ templ EventList(events *[]entities.CalendarEvent) {
 				<span style="padding:0 1rem">{ event.Title }</span>
 				// TODO: don't do the same conv twice?
 				<a href={ templ.SafeURL("/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10)) }><button style="margin-left:1rem" class="secondary">edit</button></a>
-				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(event.ID), 10) } hx-delete={ "/event/" + strconv.FormatUint(uint64(event.ID), 10) }>delete</button>
+				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(event.ID), 10) } hx-delete={ "/htmx/deleteEvent/" + strconv.FormatUint(uint64(event.ID), 10) }>delete</button>
 			</li>
 		}
 	</ul>

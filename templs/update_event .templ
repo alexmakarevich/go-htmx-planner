@@ -11,7 +11,7 @@ templ UpdateEvent(event *entities.CalendarEvent) {
 	</h2>
 	<div>
 		<form
-			hx-put={ "/event/" + strconv.FormatUint(uint64(event.ID), 10) }
+			hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
 			hx-swap="none"
 		>
 			<input

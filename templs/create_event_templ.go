@@ -26,7 +26,7 @@ func CreateEvent() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2>Create Event</h2><div><form hx-post=\"/createEvent\" hx-target=\"#notification\"><input name=\"title\" placeholder=\"title\" required onkeyup=\"this.setCustomValidity(&#39;&#39;) // reset the validation on keyup\" hx-on:htmx:validation:validate=\"if(this.value.length &lt; 1) {\n                    this.setCustomValidity(&#39;The title must be at least 1 char long&#39;) // set the validation error\n                    htmx.find(&#39;#example-form&#39;).reportValidity()          // report the issue\n                }\"> <input type=\"datetime-local\" name=\"date-time\"> <button type=\"submit\">create</button></form></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2>Create Event</h2><div><form hx-post=\"/htmx/createEvent\" hx-target=\"#notification\"><input name=\"title\" placeholder=\"title\" required onkeyup=\"this.setCustomValidity(&#39;&#39;) // reset the validation on keyup\" hx-on:htmx:validation:validate=\"if(this.value.length &lt; 1) {\n                    this.setCustomValidity(&#39;The title must be at least 1 char long&#39;) // set the validation error\n                    htmx.find(&#39;#example-form&#39;).reportValidity()          // report the issue\n                }\"> <input type=\"datetime-local\" name=\"date-time\"> <button type=\"submit\">create</button></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

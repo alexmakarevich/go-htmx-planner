@@ -31,7 +31,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/createEvent\"><button>+ create</button></a><ul>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h1>Events</h1><a href=\"/createEvent\"><button>+ create</button></a><ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -43,7 +43,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("event-" + strconv.FormatUint(uint64(event.ID), 10))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 14, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 15, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -56,7 +56,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(event.DateTime.Format("02 Jan 2006 - 03:04"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 15, Col: 79}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 16, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -69,7 +69,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("    |    ")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 16, Col: 17}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 17, Col: 17}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -82,7 +82,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatUint(uint64(event.ID), 10))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 17, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 18, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -95,7 +95,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("    |    ")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 18, Col: 17}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 19, Col: 17}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -108,7 +108,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(event.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 19, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 20, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -130,7 +130,7 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("#event-" + strconv.FormatUint(uint64(event.ID), 10))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 22, Col: 137}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 23, Col: 137}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -141,9 +141,9 @@ func EventList(events *[]entities.CalendarEvent) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("/event/" + strconv.FormatUint(uint64(event.ID), 10))
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("/htmx/deleteEvent/" + strconv.FormatUint(uint64(event.ID), 10))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 22, Col: 204}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templs/event_list.templ`, Line: 23, Col: 215}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
