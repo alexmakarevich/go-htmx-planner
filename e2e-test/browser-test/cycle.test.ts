@@ -23,7 +23,7 @@ test("cycles CRUD of event", async ({ page }) => {
   await page.getByText(/create/).click();
 
   // cannot create event without date
-  expect(page.getByText(/validation.*failed/)).toBeVisible();
+  await expect(page.getByText(/validation.*failed/)).toBeVisible();
 
   await page.locator("input[name='date-time']").fill("2024-09-26T21:14");
 
@@ -49,12 +49,12 @@ test("cycles CRUD of event", async ({ page }) => {
     .getByRole("listitem")
     .filter({ hasText: testEventTitleUpdated });
 
-  expect(eventAfterUpdate).toContainText(/10 Oct 2024/);
+  await expect(eventAfterUpdate).toContainText(/10 Oct 2024/);
 
   // delete event
   await event.getByText(/delete/).click();
 
-  expect(
+  await expect(
     page.getByRole("listitem").filter({ hasText: testEventTitleUpdated })
   ).not.toBeVisible();
 });
