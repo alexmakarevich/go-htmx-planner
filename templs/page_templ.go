@@ -26,7 +26,7 @@ func Page(content templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=devide-width, initial-scale=1\"><title>GGForm</title><script src=\"../public/htmx.min.js\"></script><link rel=\"stylesheet\" href=\"../public/pico.yellow.css\"><link rel=\"stylesheet\" href=\"../public/style.css\"></head><body><header><menu class=\"main-menu\"><li><a href=\"/\">home</a></li><li><a href=\"/events\">events</a></li></menu></header><article>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=devide-width, initial-scale=1\"><title>Go-Htmx-Planner</title><script src=\"../public/htmx.min.js\"></script><link rel=\"stylesheet\" href=\"../public/pico.yellow.css\"><link rel=\"stylesheet\" href=\"../public/style.css\"></head><body><header><menu class=\"main-menu\"><li><a href=\"/\">home</a></li><li><a href=\"/events\">events</a></li></menu></header><article>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
