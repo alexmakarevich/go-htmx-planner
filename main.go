@@ -170,6 +170,19 @@ func main() {
 		}
 	})
 
+	server.DELETE("htmx/deleteUser/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		var user entities.User
+		res := db.Delete(&user, id)
+		if res.Error != nil {
+			log.Println("Nooooooooo")
+			log.Println(res.Error)
+			simpleRender(templs.Notification(templs.BadReq))(c)
+		} else {
+			simpleRender(templs.NotificationOob(templs.Success))(c)
+		}
+	})
+
 	server.GET("/updateEvent/:id", func(c *gin.Context) {
 		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 		var ev entities.CalendarEvent
@@ -225,6 +238,32 @@ func main() {
 		} else {
 			println("succ")
 			c.Header("HX-Redirect", "/events")
+			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
+		}
+	})
+
+	server.PUT("/htmx/updateUser/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+		var newUser NewUserData
+		err := c.ShouldBind(&newUser)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		updatedUser := entities.NewUser(newUser.UserName)
+		updatedUser.ID = uint(id)
+
+		res := db.Save(&updatedUser)
+		if res.Error != nil {
+			println(res.Error.Error())
+			fmt.Println(res.Error)
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, res.Error.Error()))
+		} else {
+			println("succ")
+			c.Header("HX-Redirect", "/users")
 			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
 		}
 	})

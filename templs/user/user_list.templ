@@ -17,8 +17,8 @@ templ UserList(users *[]entities.User) {
 				{ "    |    " }
 				<span style="padding:0 1rem">{ user.UserName }</span>
 				// TODO: don't do the same conv twice?
-				// <a href={ templ.SafeURL("/updateuser/" + strconv.FormatUint(uint64(user.ID), 10)) }><button style="margin-left:1rem" class="secondary">edit</button></a>
-				// <button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#user-" + strconv.FormatUint(uint64(user.ID), 10) } hx-delete={ "/htmx/deleteuser/" + strconv.FormatUint(uint64(user.ID), 10) }>delete</button>
+				<a href={ templ.SafeURL("/updateUser/" + strconv.FormatUint(uint64(user.ID), 10)) }><button style="margin-left:1rem" class="secondary">edit</button></a>
+				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#user-" + strconv.FormatUint(uint64(user.ID), 10) } hx-delete={ "/htmx/deleteUser/" + strconv.FormatUint(uint64(user.ID), 10) }>delete</button>
 			</li>
 		}
 	</ul>
