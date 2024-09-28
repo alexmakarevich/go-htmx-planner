@@ -6,8 +6,8 @@ import (
 
 type UserEvent struct {
 	gorm.Model
-	UserID          uint `gorm:"not null;<-:create"`
-	CalendarEventID uint `gorm:"not null;<-:create"`
+	UserID          uint `gorm:"not null;<-:create"` // field should not be editable
+	CalendarEventID uint `gorm:"not null;<-:create"` // field should not be editable
 	User            User
 	CalendarEvent   CalendarEvent
 }

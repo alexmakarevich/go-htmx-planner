@@ -45,30 +45,9 @@ func main() {
 		panic("failed to connect to database")
 	}
 
+	// TODO: hanlde more errors
 	db.AutoMigrate(&entities.CalendarEvent{})
 	db.AutoMigrate(&entities.User{})
-
-	// db.Where("1 = 1").Delete(&entities.CalendarEvent{})
-
-	// res := db.Create(entities.NewCalendarEvent("Kepchuck", time.Now()))
-	// res := db.Create(&CalendarEvent{})
-
-	// if res.Error != nil {
-	// 	log.Fatal(res.Error)
-	// }
-
-	var ev entities.CalendarEvent
-
-	result := db.Model(&entities.CalendarEvent{Title: "Burger"}).First(&ev)
-
-	if result.Error != nil {
-		fmt.Println("ERRORINO")
-		fmt.Println(result.Error)
-	}
-
-	fmt.Print(&ev)
-
-	fmt.Println("kek+")
 
 	server := gin.Default()
 	server.Static("/public", "./public")
@@ -187,7 +166,6 @@ func main() {
 			log.Println(res.Error)
 			simpleRender(templs.Notification(templs.BadReq))(c)
 		} else {
-			// c.Data(200, gin.MIMEHTML, nil)
 			simpleRender(templs.NotificationOob(templs.Success))(c)
 		}
 	})
