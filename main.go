@@ -15,7 +15,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-form/entities"
-	"go-form/templs"
+	templs_event "go-form/templs/event"
+	templs "go-form/templs/generic"
+	templs_user "go-form/templs/user"
 )
 
 // TODO: timezones
@@ -81,11 +83,11 @@ func main() {
 	server.GET("/", renderPage(templs.Home()))
 
 	server.GET("/createEvent", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "Create Event", templs.Page(templs.CreateEvent()))
+		c.HTML(http.StatusOK, "Create Event", templs.Page(templs_event.CreateEvent()))
 	})
 
 	server.GET("/createUser", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "Create User", templs.Page(templs.CreateUser()))
+		c.HTML(http.StatusOK, "Create User", templs.Page(templs_user.CreateUser()))
 	})
 
 	var events []entities.CalendarEvent
@@ -93,7 +95,7 @@ func main() {
 
 	server.GET("/events", func(c *gin.Context) {
 		db.Find(&events)
-		renderPage(templs.EventList(&events))(c)
+		renderPage(templs_event.EventList(&events))(c)
 	})
 
 	type NewEventData struct {
@@ -133,7 +135,7 @@ func main() {
 
 	server.GET("/users", func(c *gin.Context) {
 		db.Find(&users)
-		renderPage(templs.UserList(&users))(c)
+		renderPage(templs_user.UserList(&users))(c)
 	})
 
 	type NewUserData struct {
@@ -173,7 +175,7 @@ func main() {
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
-		c.HTML(http.StatusOK, "event", templs.Page(templs.Event(ev)))
+		c.HTML(http.StatusOK, "event", templs.Page(templs_event.Event(ev)))
 	})
 
 	server.DELETE("htmx/deleteEvent/:id", func(c *gin.Context) {
@@ -200,7 +202,20 @@ func main() {
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
-		renderPage(templs.UpdateEvent(&ev))(c)
+		renderPage(templs_event.UpdateEvent(&ev))(c)
+	})
+
+	server.GET("/updateUser/:id", func(c *gin.Context) {
+		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		var user entities.User
+		res := db.Take(&user, id)
+		if res.Error != nil {
+			log.Println("Nooooooooo")
+			log.Println(res.Error)
+			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
+			return
+		}
+		renderPage(templs_user.UpdateUser(&user))(c)
 	})
 
 	server.PUT("/htmx/updateEvent/:id", func(c *gin.Context) {

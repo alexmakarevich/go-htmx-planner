@@ -1,19 +1,23 @@
-package templs
+package templs_event
 
-templ CreateEvent() {
+import (
+	"go-form/entities"
+	"strconv"
+)
+
+templ UpdateEvent(event *entities.CalendarEvent) {
 	<h2>
-		Create Event
+		Update Event
 	</h2>
 	<div>
 		<form
-			hx-post="/htmx/createEvent"
-			hx-target="#notification"
+			hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
+			hx-swap="none"
 		>
-			// hx-on::after-request="this.reset()"
-			// hx-ext="json-enc"
 			<input
 				name="title"
 				placeholder="title"
+				value={ event.Title }
 				required
 				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
 				hx-on:htmx:validation:validate="if(this.value.length < 1) {
@@ -21,8 +25,8 @@ templ CreateEvent() {
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
 			/>
-			<input type="datetime-local" name="date-time"/>
-			<button type="submit">create</button>
+			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
+			<button type="submit">update</button>
 		</form>
 	</div>
 }

@@ -1,23 +1,26 @@
-package templs
+package templs_user
 
 import (
 	"go-form/entities"
 	"strconv"
 )
 
-templ UpdateEvent(event *entities.CalendarEvent) {
+// TODO: nicely handle conflicting username
+// TODO: generify w/ create, perhaps?
+
+templ UpdateUser(user *entities.User) {
 	<h2>
-		Update Event
+		Update User
 	</h2>
 	<div>
 		<form
-			hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
+			hx-put={ "/htmx/updateUser/" + strconv.FormatUint(uint64(user.ID), 10) }
 			hx-swap="none"
 		>
 			<input
-				name="title"
-				placeholder="title"
-				value={ event.Title }
+				name="usernam"
+				placeholder="usernam"
+				value={ user.UserName }
 				required
 				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
 				hx-on:htmx:validation:validate="if(this.value.length < 1) {
@@ -25,7 +28,6 @@ templ UpdateEvent(event *entities.CalendarEvent) {
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
 			/>
-			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
 			<button type="submit">update</button>
 		</form>
 	</div>
