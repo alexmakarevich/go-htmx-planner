@@ -243,7 +243,7 @@ func main() {
 		if res.Error != nil {
 			println(res.Error.Error())
 			fmt.Println(res.Error)
-			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, res.Error.Error()))
 		} else {
 			println("succ")
 			c.Header("HX-Redirect", "/events")
