@@ -1,0 +1,44 @@
+package templs_auth
+
+import (
+    templs "go-form/templs/generic"
+)
+
+templ RegisterPage () {
+    @templs.EmptyPage() {
+	<h2>
+		Register
+	</h2>
+	<div>
+		<form
+			hx-post="/htmx/register"
+			hx-target="#notification"
+		>
+			<input
+				name="username"
+				placeholder="username"
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The username must be at least 1 char long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
+
+            // TODO: better password validation
+            <input
+				name="password"
+				placeholder="password"
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 10) {
+                    this.setCustomValidity('The password must be at least 10 chars long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
+			<div style="margin-bottom: 2rem"><i>Password must be at least 10 characters long</i></div>
+			<button type="submit">register</button>
+		</form>
+	</div>
+    }
+}

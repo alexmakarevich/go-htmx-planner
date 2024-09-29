@@ -13,12 +13,20 @@ import (
 	"github.com/a-h/templ"
 	"github.com/a-h/templ/examples/integration-gin/gintemplrenderer"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/xid"
 
 	"go-form/entities"
+	templs_auth "go-form/templs/auth"
 	templs_event "go-form/templs/event"
 	templs "go-form/templs/generic"
 	templs_user "go-form/templs/user"
 )
+
+const Domain string = "localhost"
+const CookieName string = "gohtmxplanner_cookie"
+const CookieMaxAge = int(time.Minute * 10)
+const CookieSecure = true
+const CookieHTTPOnly = true
 
 // TODO: timezones
 
@@ -39,15 +47,50 @@ func ErrorNotification(c *gin.Context, text string) {
 	c.HTML(200, "", templs.NotificationWithText(templs.BadReq, text))
 }
 
+func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// TODO: reuse bad response
+		// TODO: Nicer looking bad response
+		// TODO: difft bad response, whether user is logged in/auth is expired or he lacks rights
+		sessionId, err := c.Cookie(CookieName)
+		if err != nil {
+			simpleRender(templs.NotificationOobWithText(templs.Success, "You don't have access"))(c)
+			c.Abort()
+			return
+		}
+
+		sessionToFind := entities.Session{}
+
+		res := db.Debug().Joins("User").First(&sessionToFind, entities.Session{ID: sessionId})
+
+		if res.Error != nil {
+			fmt.Println(res.Error.Error())
+			simpleRender(templs.NotificationOobWithText(templs.Success, "You don't have access"))(c)
+			c.Abort()
+			return
+		}
+
+		c.Set("auth-context", sessionToFind)
+
+		c.Next()
+
+	}
+}
+
+func GetAuthContext(c *gin.Context) *entities.Session {
+	sesionPtr := c.MustGet("AuthContext").(*entities.Session)
+	return sesionPtr
+}
+
 func main() {
+	// TODO: FUTURE: prod.db, migrations, backups, etc.
 	db, err := gorm.Open(sqlite.Open("db/dev.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
 	}
 
 	// TODO: hanlde more errors
-	db.AutoMigrate(&entities.CalendarEvent{})
-	db.AutoMigrate(&entities.User{})
+	db.AutoMigrate(&entities.CalendarEvent{}, &entities.User{}, &entities.Session{})
 
 	server := gin.Default()
 	server.Static("/public", "./public")
@@ -61,18 +104,91 @@ func main() {
 
 	server.GET("/", renderPage(templs.Home()))
 
+	server.GET("/register", simpleRender(templs_auth.RegisterPage()))
+
+	server.GET("/login", simpleRender(templs_auth.LoginPage()))
+
+	type NewUserData struct {
+		UserName string `form:"username" binding:"required"`
+		Password string `form:"username" binding:"required"`
+	}
+	type LoginData = NewUserData
+
+	server.POST("/htmx/register", func(c *gin.Context) {
+		var login LoginData
+		err := c.ShouldBind(&login)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+		user := entities.NewUser(login.UserName, login.Password)
+
+		// TODO: put db ops in transaction
+
+		if err := db.Create(&user).Error; err != nil {
+			fmt.Println(err.Error())
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		fmt.Println(login.UserName)
+		sessionToken := xid.New().String()
+
+		session := entities.NewSession(sessionToken, user.ID)
+
+		if err := db.Create(&session).Error; err != nil {
+			fmt.Println(err.Error())
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
+
+		c.Header("HX-Redirect", "/")
+		c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+	})
+
+	server.POST("/htmx/login", func(c *gin.Context) {
+		var newUser NewUserData
+		err := c.ShouldBind(&newUser)
+
+		if err != nil {
+			ErrorNotification(c, err.Error())
+			return
+		}
+		user := entities.NewUser(newUser.UserName, newUser.Password)
+
+		// TODO: put db ops in transaction
+
+		if err := db.Where(&user).Take(&user).Error; err != nil {
+			fmt.Println(err.Error())
+			ErrorNotification(c, "User does not exist, or wrong password")
+			return
+		}
+
+		sessionToken := xid.New().String()
+		session := entities.NewSession(sessionToken, user.ID)
+
+		if err := db.Create(&session).Error; err != nil {
+			fmt.Println(err.Error())
+			ErrorNotification(c, err.Error())
+			return
+		}
+
+		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
+
+		c.Header("HX-Redirect", "/")
+		// TODO: figure the nicest way to combine redirect & notifications (special header?)
+		// c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+	})
+
 	server.GET("/createEvent", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "Create Event", templs.Page(templs_event.CreateEvent()))
 	})
 
-	server.GET("/createUser", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "Create User", templs.Page(templs_user.CreateUser()))
-	})
-
-	var events []entities.CalendarEvent
-	var users []entities.User
-
 	server.GET("/events", func(c *gin.Context) {
+		var events []entities.CalendarEvent
 		db.Find(&events)
 		renderPage(templs_event.EventList(&events))(c)
 	})
@@ -113,13 +229,10 @@ func main() {
 	})
 
 	server.GET("/users", func(c *gin.Context) {
+		var users []entities.User
 		db.Find(&users)
 		renderPage(templs_user.UserList(&users))(c)
 	})
-
-	type NewUserData struct {
-		UserName string `form:"username" binding:"required"`
-	}
 
 	server.POST("/htmx/createUser", func(c *gin.Context) {
 		var newUser NewUserData
@@ -130,7 +243,7 @@ func main() {
 			return
 		}
 
-		res := db.Create(entities.NewUser(newUser.UserName))
+		res := db.Create(entities.NewUser(newUser.UserName, newUser.Password))
 		if res.Error != nil {
 			println("bad db")
 			fmt.Println(res.Error)
@@ -253,7 +366,7 @@ func main() {
 			return
 		}
 
-		updatedUser := entities.NewUser(newUser.UserName)
+		updatedUser := entities.NewUser(newUser.UserName, newUser.Password)
 		updatedUser.ID = uint(id)
 
 		res := db.Save(&updatedUser)
@@ -267,6 +380,20 @@ func main() {
 			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
 		}
 	})
+
+	server.Use(AuthMiddleware(db))
+	{
+		// TEMP TEST ROUTE
+		server.GET("/protected", func(c *gin.Context) {
+			session := c.MustGet("auth-context").(entities.Session)
+
+			// it would print: "12345"
+			log.Println("USER FROM CONTEXT")
+			log.Println(session.User)
+			c.HTML(http.StatusCreated, "", templs.NotificationWithText(templs.Success, "protected content"))
+
+		})
+	}
 
 	server.Run("localhost:19999")
 
