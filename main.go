@@ -22,6 +22,7 @@ import (
 	templs_user "go-form/templs/user"
 )
 
+// TODO: check what else makes sense as const
 const Domain string = "localhost"
 const CookieName string = "gohtmxplanner_cookie"
 const CookieMaxAge = int(time.Minute * 10)
@@ -54,7 +55,8 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 		// TODO: difft bad response, whether user is logged in/auth is expired or he lacks rights
 		sessionId, err := c.Cookie(CookieName)
 		if err != nil {
-			simpleRender(templs.NotificationOobWithText(templs.Success, "You don't have access"))(c)
+			fmt.Println(err)
+			c.Redirect(301, "/loginOrRegister")
 			c.Abort()
 			return
 		}
@@ -65,7 +67,7 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 
 		if res.Error != nil {
 			fmt.Println(res.Error.Error())
-			simpleRender(templs.NotificationOobWithText(templs.Success, "You don't have access"))(c)
+			c.Redirect(301, "/loginOrRegister")
 			c.Abort()
 			return
 		}
@@ -107,6 +109,8 @@ func main() {
 	server.GET("/register", simpleRender(templs_auth.RegisterPage()))
 
 	server.GET("/login", simpleRender(templs_auth.LoginPage()))
+
+	server.GET("/loginOrRegister", simpleRender(templs_auth.LoginOrRegister()))
 
 	type NewUserData struct {
 		UserName string `form:"username" binding:"required"`
@@ -383,6 +387,23 @@ func main() {
 
 	server.Use(AuthMiddleware(db))
 	{
+		server.POST("/htmx/logout", func(c *gin.Context) {
+
+			session := c.MustGet("auth-context").(entities.Session)
+
+			if err := db.Delete(&session).Error; err != nil {
+				fmt.Println(err.Error())
+				ErrorNotification(c, err.Error())
+				return
+			}
+
+			c.SetCookie(CookieName, "", -1, "/", Domain, CookieSecure, CookieHTTPOnly)
+
+			c.Header("HX-Redirect", "/login")
+			// TODO: figure the nicest way to combine redirect & notifications (special header?)
+			c.String(200, "")
+		})
+
 		// TEMP TEST ROUTE
 		server.GET("/protected", func(c *gin.Context) {
 			session := c.MustGet("auth-context").(entities.Session)

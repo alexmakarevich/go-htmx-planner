@@ -1,0 +1,30 @@
+package templs_auth
+
+import (
+    templs "go-form/templs/generic"
+)
+
+templ LoginOrRegister() {
+    @templs.EmptyPage() {
+        // TODO: don't use vh
+        <div style="display: flex;
+    flex-direction: column;
+    height: 80vh;
+    justify-content: center;
+    align-items: center;
+        ">
+            <h3>
+                Please log in or register
+            </h3>
+            <menu class="main-menu">
+                <li>
+                    <a href="/login">log in</a>
+                </li>
+                <li>
+                    <a href="/register">register</a>
+                </li>
+            </menu>
+        </div>
+
+    }
+}

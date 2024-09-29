@@ -1,5 +1,6 @@
 package templs
 
+// should be used when logged in 
 templ Page(content templ.Component) {
 			@EmptyPage(){
 				<header>
@@ -14,10 +15,15 @@ templ Page(content templ.Component) {
 							<a href="/users">users</a>
 						</li>
 						<li>
-							<a href="/login">log in</a>
+							<a href="/protected">protected</a>
 						</li>
+						// <li>
+						// 	<a href="/login">log in</a>
+						// </li>
 						<li>
-							<a href="/register">register</a>
+							// TODO: cursor:pointer in a nicer way?
+							// TODO: "are you sure?""
+							<a hx-post="/htmx/logout" style="cursor:pointer">log out</a>
 						</li>
 					</menu>
 				</header>
