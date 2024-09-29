@@ -27,6 +27,7 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 		// TODO: difft bad response, whether user is logged in/auth is expired or he lacks rights
 		sessionId, err := c.Cookie(CookieName)
 		if err != nil {
+			fmt.Println("sessionId not found")
 			fmt.Println(err)
 			// c.Header("HX-Redirect", "/loginOrRegister")
 			c.Redirect(307, "/loginOrRegister")
@@ -57,8 +58,8 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func GetAuthContext(c *gin.Context) *entities.Session {
-	sesionPtr := c.MustGet("AuthContext").(*entities.Session)
+func GetAuthContext(c *gin.Context) entities.Session {
+	sesionPtr := c.MustGet("auth-context").(entities.Session)
 	return sesionPtr
 }
 
