@@ -64,6 +64,8 @@ func main() {
 		server.GET("/", routes.RenderPage(templs.Home()))
 
 		server.POST("/htmx/logout", routes.LogoutHandler(queries))
+		server.GET("/settings", routes.SettingsPageHandler(queries))
+		server.DELETE("/htmx/delete-self", routes.DeleteSelfHandler(queries))
 
 		// USER
 		server.GET("/createUser", routes.CreateUserPageHandler(queries))

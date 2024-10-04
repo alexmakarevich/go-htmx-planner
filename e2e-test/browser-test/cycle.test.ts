@@ -68,4 +68,10 @@ test("cycles CRUD of event", async ({ page }) => {
   await expect(
     page.getByRole("listitem").filter({ hasText: testEventTitleUpdated })
   ).not.toBeVisible();
+
+  // delete test user
+  await page.getByRole("link").getByText(/settings/).click();
+  await page.getByRole("button").getByText(/delete account/).click();
+  await expect(page.getByText(/log in or register/)).toBeVisible()
+
 });

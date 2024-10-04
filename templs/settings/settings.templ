@@ -1,0 +1,25 @@
+package templs_settings
+
+import (
+    templs "go-form/templs/generic"
+)
+
+templ Settings () {
+    @templs.EmptyPage() {
+        <div style="display: flex;
+    flex-direction: column;
+    height: 80vh;
+    justify-content: center;
+    align-items: center;
+        ">
+            <h3>
+                Settings
+            </h3>
+            <menu class="main-menu">
+                <li>
+                    <a hx-delete="/htmx/delete-self"><button class="delete">delete account</button></a>
+                </li>
+            </menu>
+        </div>
+    }
+}

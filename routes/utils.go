@@ -26,3 +26,8 @@ func ErrorNotification(c *gin.Context, text string) {
 	log.Println(text)
 	c.HTML(200, "", templs.NotificationWithText(templs.BadReq, text))
 }
+
+func ErrorNotificationOob(c *gin.Context, text string) {
+	log.Println(text)
+	c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, text))
+}
