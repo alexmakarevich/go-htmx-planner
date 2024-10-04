@@ -85,7 +85,7 @@ func LogoutHandler(q *db_entities.Queries) func(c *gin.Context) {
 
 type NewUserData struct {
 	UserName string `form:"username" binding:"required"`
-	Password string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
 }
 type LoginData = NewUserData
 
