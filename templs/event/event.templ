@@ -1,10 +1,10 @@
 package templs_event
 
 import (
-	"go-form/entities"
 	"strconv"
+	"go-form/sqlc/db_entities"
 )
 
-templ Event(e entities.CalendarEvent) {
+templ Event(e db_entities.CalendarEvent) {
 	<div>{ strconv.FormatUint(uint64(e.ID), 10) } - { e.Title }</div>
 }

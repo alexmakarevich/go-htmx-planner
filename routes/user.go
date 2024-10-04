@@ -6,26 +6,28 @@ import (
 	"net/http"
 	"strconv"
 
-	"gorm.io/gorm"
-
 	"github.com/gin-gonic/gin"
 
-	"go-form/entities"
+	"go-form/sqlc/db_entities"
 	templs "go-form/templs/generic"
 	templs_user "go-form/templs/user"
 )
 
-func ListUsersHandler(db *gorm.DB) func(c *gin.Context) {
+func ListUsersPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var users []entities.User
-		db.Find(&users)
+		users, err := q.ListUsers(c)
+		if err != nil {
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
+			return
+		}
 		RenderPage(templs_user.UserList(&users))(c)
 	}
 }
 
-func UpdateUserHandler(db *gorm.DB) func(c *gin.Context) {
+func UpdateUserHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 
 		var newUser NewUserData
 		err := c.ShouldBind(&newUser)
@@ -35,14 +37,12 @@ func UpdateUserHandler(db *gorm.DB) func(c *gin.Context) {
 			return
 		}
 
-		updatedUser := entities.NewUser(newUser.UserName, newUser.Password)
-		updatedUser.ID = uint(id)
+		err = q.UpdateUser(c, db_entities.UpdateUserParams{ID: id, UserName: newUser.UserName, Password: newUser.Password})
 
-		res := db.Save(&updatedUser)
-		if res.Error != nil {
-			println(res.Error.Error())
-			fmt.Println(res.Error)
-			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, res.Error.Error()))
+		if err != nil {
+			println(err.Error())
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
 		} else {
 			println("succ")
 			c.Header("HX-Redirect", "/users")
@@ -51,14 +51,13 @@ func UpdateUserHandler(db *gorm.DB) func(c *gin.Context) {
 	}
 }
 
-func UpdateUserPageHandler(db *gorm.DB) func(c *gin.Context) {
+func UpdateUserPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-		var user entities.User
-		res := db.Take(&user, id)
-		if res.Error != nil {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+		user, err := q.GetUser(c, id)
+		if err != nil {
 			log.Println("Nooooooooo")
-			log.Println(res.Error)
+			log.Println(err.Error())
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
@@ -66,23 +65,28 @@ func UpdateUserPageHandler(db *gorm.DB) func(c *gin.Context) {
 	}
 }
 
-func DeleteUserHandler(db *gorm.DB) func(c *gin.Context) {
+func CreateUserPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-		var user entities.User
-		res := db.Delete(&user, id)
-		if res.Error != nil {
+		RenderPage(templs_user.CreateUser())(c)
+	}
+}
+
+func DeleteUserHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+		err := q.DeleteUser(c, id)
+		if err != nil {
 			log.Println("Nooooooooo")
-			log.Println(res.Error)
-			SimpleRender(templs.Notification(templs.BadReq))(c)
-		} else {
-			SimpleRender(templs.NotificationOob(templs.Success))(c)
+			log.Println(err.Error())
+			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
+			return
 		}
+		SimpleRender(templs.NotificationOob(templs.Success))(c)
 	}
 }
 
 // not actively used - for dev/testing only
-func CreateUserHandler(db *gorm.DB) func(c *gin.Context) {
+func CreateUserHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var newUser NewUserData
 		err := c.ShouldBind(&newUser)
@@ -92,21 +96,21 @@ func CreateUserHandler(db *gorm.DB) func(c *gin.Context) {
 			return
 		}
 
-		res := db.Create(entities.NewUser(newUser.UserName, newUser.Password))
-		if res.Error != nil {
+		_, err = q.CreateUser(c, db_entities.CreateUserParams{UserName: newUser.UserName, Password: newUser.Password})
+
+		if err != nil {
 			println("bad db")
-			fmt.Println(res.Error)
+			fmt.Println(err.Error())
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
-			fmt.Println(newUser.UserName)
 			c.Header("HX-Redirect", "/users")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 	}
 }
 
-// func BaseHandler(db *gorm.DB) func(c *gin.Context) {
+// func BaseHandler(q *db_entities.Queries) func(c *gin.Context) {
 // 	return func(c *gin.Context) {
 
 // 	}

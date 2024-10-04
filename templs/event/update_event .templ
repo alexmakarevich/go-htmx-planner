@@ -1,11 +1,11 @@
 package templs_event
 
 import (
-	"go-form/entities"
 	"strconv"
+	"go-form/sqlc/db_entities"
 )
 
-templ UpdateEvent(event *entities.CalendarEvent) {
+templ UpdateEvent(event *db_entities.CalendarEvent) {
 	<h2>
 		Update Event
 	</h2>

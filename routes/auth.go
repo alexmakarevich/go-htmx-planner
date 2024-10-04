@@ -2,13 +2,12 @@ package routes
 
 import (
 	"fmt"
-	"go-form/entities"
+	"go-form/sqlc/db_entities"
 	templs "go-form/templs/generic"
 	"net/http"
 	"time"
 
 	"github.com/rs/xid"
-	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,16 +19,17 @@ const CookieMaxAge = int(time.Minute * 10)
 const CookieSecure = true
 const CookieHTTPOnly = true
 
-func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
+func AuthMiddleware(q *db_entities.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO: reuse bad response
 		// TODO: Nicer looking bad response
 		// TODO: difft bad response, whether user is logged in/auth is expired or he lacks rights
 		sessionId, err := c.Cookie(CookieName)
 		if err != nil {
-			fmt.Println("sessionId not found")
+			fmt.Println("session cookie not found")
 			fmt.Println(err)
 			// c.Header("HX-Redirect", "/loginOrRegister")
+			// c.String(200, "")
 			c.Redirect(307, "/loginOrRegister")
 			c.Abort()
 			return
@@ -38,36 +38,38 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 		fmt.Println("sessionId")
 		fmt.Println(sessionId)
 
-		sessionToFind := entities.Session{}
+		// TODO: join w/ user
 
-		res := db.Debug().Joins("User").First(&sessionToFind, entities.Session{ID: sessionId})
+		sessionWithUser, err := q.GetSessionWithUser(c, sessionId)
 
-		if res.Error != nil {
+		if err != nil {
 			fmt.Println("ERROR:")
-			fmt.Println(res.Error.Error())
+			fmt.Println(err.Error())
 			// c.Header("HX-Redirect", "/loginOrRegister")
 			c.Redirect(307, "/loginOrRegister")
 			c.Abort()
 			return
 		}
 
-		c.Set("auth-context", sessionToFind)
+		c.Set("auth-context", sessionWithUser)
 
 		c.Next()
 
 	}
 }
 
-func GetAuthContext(c *gin.Context) entities.Session {
-	sesionPtr := c.MustGet("auth-context").(entities.Session)
+func GetAuthContext(c *gin.Context) db_entities.GetSessionWithUserRow {
+	sesionPtr := c.MustGet("auth-context").(db_entities.GetSessionWithUserRow)
 	return sesionPtr
 }
 
-func LogoutHandler(db *gorm.DB) func(c *gin.Context) {
+func LogoutHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		session := c.MustGet("auth-context").(entities.Session)
+		session := c.MustGet("auth-context").(db_entities.GetSessionWithUserRow)
 
-		if err := db.Delete(&session).Error; err != nil {
+		err := q.DeleteSession(c, session.SessionID)
+
+		if err != nil {
 			fmt.Println(err.Error())
 			ErrorNotification(c, err.Error())
 			return
@@ -87,7 +89,7 @@ type NewUserData struct {
 }
 type LoginData = NewUserData
 
-func LoginHandler(db *gorm.DB) func(c *gin.Context) {
+func LoginHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var newUser NewUserData
 		err := c.ShouldBind(&newUser)
@@ -96,20 +98,19 @@ func LoginHandler(db *gorm.DB) func(c *gin.Context) {
 			ErrorNotification(c, err.Error())
 			return
 		}
-		user := entities.NewUser(newUser.UserName, newUser.Password)
-
 		// TODO: put db ops in transaction
 
-		if err := db.Where(&user).Take(&user).Error; err != nil {
+		user, err := q.FindUser(c, db_entities.FindUserParams{Password: newUser.Password, UserName: newUser.UserName})
+
+		if err != nil {
 			fmt.Println(err.Error())
 			ErrorNotification(c, "User does not exist, or wrong password")
 			return
 		}
 
 		sessionToken := xid.New().String()
-		session := entities.NewSession(sessionToken, user.ID)
 
-		if err := db.Create(&session).Error; err != nil {
+		if _, err := q.CreateSession(c, db_entities.CreateSessionParams{ID: sessionToken, UserID: user.ID}); err != nil {
 			fmt.Println(err.Error())
 			ErrorNotification(c, err.Error())
 			return
@@ -128,7 +129,7 @@ func LoginHandler(db *gorm.DB) func(c *gin.Context) {
 	}
 }
 
-func RegisterHandler(db *gorm.DB) func(c *gin.Context) {
+func RegisterHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var login LoginData
 		err := c.ShouldBind(&login)
@@ -137,30 +138,35 @@ func RegisterHandler(db *gorm.DB) func(c *gin.Context) {
 			ErrorNotification(c, err.Error())
 			return
 		}
-		user := entities.NewUser(login.UserName, login.Password)
 
 		// TODO: put db ops in transaction
 
-		if err := db.Create(&user).Error; err != nil {
+		user, err := q.CreateUser(c, db_entities.CreateUserParams{UserName: login.UserName, Password: login.Password})
+
+		if err != nil {
+			println("bad db")
 			fmt.Println(err.Error())
-			ErrorNotification(c, err.Error())
+			c.HTML(200, "", templs.Notification(templs.BadReq))
 			return
 		}
-
 		fmt.Println(login.UserName)
 		sessionToken := xid.New().String()
 
-		session := entities.NewSession(sessionToken, user.ID)
-
-		if err := db.Create(&session).Error; err != nil {
+		if _, err := q.CreateSession(c, db_entities.CreateSessionParams{ID: sessionToken, UserID: user.ID}); err != nil {
 			fmt.Println(err.Error())
 			ErrorNotification(c, err.Error())
 			return
 		}
 
-		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
+		fmt.Println("New Session:")
+		fmt.Println(sessionToken)
 
+		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
 		c.Header("HX-Redirect", "/")
-		c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+		// c.String(200, "")
+		// c.Redirect(300, "/")
+		// TODO: figure the nicest way to combine redirect & notifications (special header?)
+		// TODO: i have to have HTMX in the browser for this to work
+		c.HTML(http.StatusOK, "", templs.Notification(templs.Success))
 	}
 }

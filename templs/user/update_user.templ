@@ -1,14 +1,14 @@
 package templs_user
 
 import (
-	"go-form/entities"
 	"strconv"
+	"go-form/sqlc/db_entities"
 )
 
 // TODO: nicely handle conflicting username
 // TODO: generify w/ create, perhaps?
 
-templ UpdateUser(user *entities.User) {
+templ UpdateUser(user *db_entities.User) {
 	<h2>
 		Update User
 	</h2>

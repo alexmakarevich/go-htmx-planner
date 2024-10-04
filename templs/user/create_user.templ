@@ -21,6 +21,16 @@ templ CreateUser() {
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
 			/>
+			<input
+				name="password"
+				placeholder="password"
+				required
+				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The password must be at least 1 char long') // set the validation error
+                    htmx.find('#example-form').reportValidity()          // report the issue
+                }"
+			/>
 			<button type="submit">create</button>
 		</form>
 	</div>

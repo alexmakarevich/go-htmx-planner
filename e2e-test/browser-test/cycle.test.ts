@@ -11,6 +11,17 @@ const testEventTitleUpdated = testEventTitle + "- Edited";
 test("cycles CRUD of event", async ({ page }) => {
   await page.goto(BASE_URL);
 
+  // register
+  await expect(page.getByText(/log in or register/)).toBeVisible()
+
+  // go to events page
+  await page.getByText("register",{exact: true}).click();
+
+    // try to register
+  await page.locator("input[name='username']").fill("user-"+testId);
+  await page.locator("input[name='password']").fill("password-"+testId);
+  await page.getByRole("button").getByText(/register/).click()
+
   // go to events page
   await page.getByText(/events/).click();
 

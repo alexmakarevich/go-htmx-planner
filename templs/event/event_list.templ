@@ -1,11 +1,11 @@
 package templs_event
 
 import (
-	"go-form/entities"
 	"strconv"
+	"go-form/sqlc/db_entities"
 )
 
-templ EventList(events *[]entities.CalendarEvent) {
+templ EventList(events *[]db_entities.CalendarEvent) {
 	<h1>Events</h1>
 	<a href="/createEvent">
 		<button>+ create</button>

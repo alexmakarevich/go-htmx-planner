@@ -6,6 +6,6 @@ Inspired by the need to coordinate basketball team members.
 
 Status: WIP
 
-Tech: Golang (gin & gorm), sqlite, HTMX
+Tech: Golang (gin & sqlc), sqlite, HTMX
 
 Testing: E2E-first, as internals are very fluid

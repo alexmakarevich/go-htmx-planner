@@ -7,16 +7,14 @@ import (
 	"strconv"
 	"time"
 
-	"gorm.io/gorm"
-
 	"github.com/gin-gonic/gin"
 
-	"go-form/entities"
+	"go-form/sqlc/db_entities"
 	templs_event "go-form/templs/event"
 	templs "go-form/templs/generic"
 )
 
-func CreateEventPageHandler(db *gorm.DB) func(c *gin.Context) {
+func CreateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "Create Event", templs.Page(templs_event.CreateEvent()))
 	}
@@ -25,10 +23,11 @@ func CreateEventPageHandler(db *gorm.DB) func(c *gin.Context) {
 type NewEventData struct {
 	Title    string `form:"title" binding:"required"`
 	DateTime string `form:"date-time" binding:"required"`
+	// OwnerId  int64  `form:"owner-id" binding:"required"`
 }
 
 // not actively used - for dev/testing only
-func CreateEventHandler(db *gorm.DB) func(c *gin.Context) {
+func CreateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		var newEvent NewEventData
@@ -46,34 +45,37 @@ func CreateEventHandler(db *gorm.DB) func(c *gin.Context) {
 			return
 		}
 
-		session := GetAuthContext(c)
+		// session := GetAuthContext(c)
 
-		res := db.Create(entities.NewCalendarEvent(newEvent.Title, newEventTime, session.UserID))
-		if res.Error != nil {
+		_, err = q.CreateCalendaEvent(c, db_entities.CreateCalendaEventParams{Title: newEvent.Title, DateTime: newEventTime, OwnerID: int64(1)})
+
+		if err != nil {
 			println("bad db")
-			fmt.Println(res.Error)
+			fmt.Println(err.Error())
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
-			fmt.Println(newEvent.Title)
 			c.Header("HX-Redirect", "/events")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
-
 	}
 }
 
-func ListEventsPageHandler(db *gorm.DB) func(c *gin.Context) {
+func ListEventsPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var events []entities.CalendarEvent
-		db.Find(&events)
+		events, err := q.ListCalendaEvents(c)
+		if err != nil {
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
+			return
+		}
 		RenderPage(templs_event.EventList(&events))(c)
 	}
 }
 
-func UpdateEventHandler(db *gorm.DB) func(c *gin.Context) {
+func UpdateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 
 		var newEvent NewEventData
 		err := c.ShouldBind(&newEvent)
@@ -90,54 +92,42 @@ func UpdateEventHandler(db *gorm.DB) func(c *gin.Context) {
 			return
 		}
 
-		event := entities.CalendarEvent{}
-		res := db.Find(&event, uint(id))
+		err = q.UpdateCalendaEvent(c, db_entities.UpdateCalendaEventParams{ID: id, Title: newEvent.Title, DateTime: newEventTime})
 
-		if res.Error != nil {
-			println(res.Error.Error())
-			fmt.Println(res.Error)
-			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, res.Error.Error()))
-			return
-		}
-
-		updatedEvent := entities.NewCalendarEvent(newEvent.Title, newEventTime, event.OwnerId)
-		updatedEvent.ID = event.ID
-
-		if res.Error != nil {
-			println(res.Error.Error())
-			fmt.Println(res.Error)
-			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, res.Error.Error()))
+		if err != nil {
+			println("bad db")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
 			c.Header("HX-Redirect", "/events")
-			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
+			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 	}
 }
 
-func UpdateEventPageHandler(db *gorm.DB) func(c *gin.Context) {
+func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-		var ev entities.CalendarEvent
-		res := db.Take(&ev, id)
-		if res.Error != nil {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+		event, err := q.GetCalendaEvent(c, id)
+		if err != nil {
 			log.Println("Nooooooooo")
-			log.Println(res.Error)
+			log.Println(err.Error())
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
-		RenderPage(templs_event.UpdateEvent(&ev))(c)
+		RenderPage(templs_event.UpdateEvent(&event))(c)
 	}
 }
 
-func GetEventPageHandler(db *gorm.DB) func(c *gin.Context) {
+// TODO: is this used?
+func GetEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-		var ev entities.CalendarEvent
-		res := db.Take(&ev, id)
-		if res.Error != nil {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+		ev, err := q.GetCalendaEvent(c, id)
+		if err != nil {
 			log.Println("Nooooooooo")
-			log.Println(res.Error)
+			log.Println(err.Error())
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
@@ -145,28 +135,28 @@ func GetEventPageHandler(db *gorm.DB) func(c *gin.Context) {
 	}
 }
 
-func GetEventHandler(db *gorm.DB) func(c *gin.Context) {
+func GetEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 	}
 }
 
-func DeleteEventHandler(db *gorm.DB) func(c *gin.Context) {
+func DeleteEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-		var ev entities.CalendarEvent
-		res := db.Delete(&ev, id)
-		if res.Error != nil {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+		err := q.DeleteCalendaEvent(c, id)
+		if err != nil {
 			log.Println("Nooooooooo")
-			log.Println(res.Error)
-			SimpleRender(templs.Notification(templs.BadReq))(c)
+			log.Println(err.Error())
+			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
+			return
 		} else {
 			SimpleRender(templs.NotificationOob(templs.Success))(c)
 		}
 	}
 }
 
-// func BaseHandler(db *gorm.DB) func(c *gin.Context) {
+// func BaseHandler(q *db_entities.Queries) func(c *gin.Context) {
 // 	return func(c *gin.Context) {
 
 // 	}
