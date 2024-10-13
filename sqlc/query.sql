@@ -48,7 +48,7 @@ WHERE id = ? LIMIT 1;
 -- ON filtered_participations.user_id = users.id;
 
 -- name: ListUsersInRelationToThisEvent :many
-SELECT users.*, participations.event_id as event_id FROM users LEFT JOIN participations
+SELECT users.*, participations.event_id as event_id, participations.status as status FROM users LEFT JOIN participations
 ON participations.user_id = users.id AND participations.event_id = ?;
 
 -- name: FindUser :one
@@ -106,12 +106,23 @@ WHERE id = ?;
 
 -- PARTICIPATIONS
 
--- name: AddParticipant :many
+-- name: AddParticipant :one
 INSERT INTO participations (
-  user_id, event_id
+  user_id, event_id, status
 ) VALUES (
-  ?, ?
+  ?, ?, ?
 )
+RETURNING *;
+
+-- FYI: sqlite upserts are broken in sqlc
+
+-- name: UpdateParticipant :exec
+UPDATE participations SET status = @status
+WHERE user_id = @user_id AND event_id = @event_id;
+
+-- name: InviteParticipants :many
+UPDATE participations SET status = 'invited'
+WHERE event_id = @event_id
 RETURNING *;
 
 -- name: DeleteParticipant :exec

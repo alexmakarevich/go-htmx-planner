@@ -11,43 +11,28 @@ import (
 	"time"
 )
 
-const addParticipant = `-- name: AddParticipant :many
+const addParticipant = `-- name: AddParticipant :one
 
 INSERT INTO participations (
-  user_id, event_id
+  user_id, event_id, status
 ) VALUES (
-  ?, ?
+  ?, ?, ?
 )
-RETURNING user_id, event_id
+RETURNING user_id, event_id, status
 `
 
 type AddParticipantParams struct {
 	UserID  int64
 	EventID int64
+	Status  string
 }
 
 // PARTICIPATIONS
-func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) ([]Participation, error) {
-	rows, err := q.db.QueryContext(ctx, addParticipant, arg.UserID, arg.EventID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Participation
-	for rows.Next() {
-		var i Participation
-		if err := rows.Scan(&i.UserID, &i.EventID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) (Participation, error) {
+	row := q.db.QueryRowContext(ctx, addParticipant, arg.UserID, arg.EventID, arg.Status)
+	var i Participation
+	err := row.Scan(&i.UserID, &i.EventID, &i.Status)
+	return i, err
 }
 
 const createCalendaEvent = `-- name: CreateCalendaEvent :one
@@ -302,6 +287,35 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const inviteParticipants = `-- name: InviteParticipants :many
+UPDATE participations SET status = 'invited'
+WHERE event_id = ?1
+RETURNING user_id, event_id, status
+`
+
+func (q *Queries) InviteParticipants(ctx context.Context, eventID int64) ([]Participation, error) {
+	rows, err := q.db.QueryContext(ctx, inviteParticipants, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Participation
+	for rows.Next() {
+		var i Participation
+		if err := rows.Scan(&i.UserID, &i.EventID, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCalendaEvents = `-- name: ListCalendaEvents :many
 SELECT id, title, date_time, owner_id FROM calendar_events
 ORDER BY date_time
@@ -393,7 +407,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 
 const listUsersInRelationToThisEvent = `-- name: ListUsersInRelationToThisEvent :many
 
-SELECT users.id, users.user_name, users.password, participations.event_id as event_id FROM users LEFT JOIN participations
+SELECT users.id, users.user_name, users.password, participations.event_id as event_id, participations.status as status FROM users LEFT JOIN participations
 ON participations.user_id = users.id AND participations.event_id = ?
 `
 
@@ -402,6 +416,7 @@ type ListUsersInRelationToThisEventRow struct {
 	UserName string
 	Password string
 	EventID  sql.NullInt64
+	Status   sql.NullString
 }
 
 // -- name: ListUsersInRelationToThisEvent :many
@@ -427,6 +442,7 @@ func (q *Queries) ListUsersInRelationToThisEvent(ctx context.Context, eventID in
 			&i.UserName,
 			&i.Password,
 			&i.EventID,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -463,6 +479,24 @@ func (q *Queries) UpdateCalendaEvent(ctx context.Context, arg UpdateCalendaEvent
 		arg.OwnerID,
 		arg.ID,
 	)
+	return err
+}
+
+const updateParticipant = `-- name: UpdateParticipant :exec
+
+UPDATE participations SET status = ?1
+WHERE user_id = ?2 AND event_id = ?3
+`
+
+type UpdateParticipantParams struct {
+	Status  string
+	UserID  int64
+	EventID int64
+}
+
+// FYI: sqlite upserts are broken in sqlc
+func (q *Queries) UpdateParticipant(ctx context.Context, arg UpdateParticipantParams) error {
+	_, err := q.db.ExecContext(ctx, updateParticipant, arg.Status, arg.UserID, arg.EventID)
 	return err
 }
 

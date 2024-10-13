@@ -106,12 +106,64 @@ func UpdateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
-func AddParticipanHandler(q *db_entities.Queries) func(c *gin.Context) {
+func InviteParticipantsHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+
+		updatedEvents, err := q.InviteParticipants(c, eventId)
+
+		if err != nil {
+			println("could not add participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not add participation"))
+			return
+		}
+
+		if len(updatedEvents) == 0 {
+			fmt.Println("No users to invite")
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "No users to invite"))
+			return
+		}
+
+		println("succ")
+		c.Header("HX-Refresh", "true")
+		c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "added participant"))
+	}
+}
+
+func UpdateParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
 		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+		status := c.Param("status")
 
-		_, err := q.AddParticipant(c, db_entities.AddParticipantParams{EventID: eventId, UserID: userId})
+		fmt.Println("UPSERT")
+
+		fmt.Println(eventId)
+		fmt.Println(userId)
+		fmt.Println(status)
+
+		err := q.UpdateParticipant(c, db_entities.UpdateParticipantParams{EventID: eventId, UserID: userId, Status: status})
+
+		if err != nil {
+			println("could not add participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not add participation"))
+		} else {
+			println("succ")
+			c.Header("HX-Refresh", "true")
+			c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "added participant"))
+		}
+	}
+}
+
+func AddParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+		status := c.Param("status")
+
+		_, err := q.AddParticipant(c, db_entities.AddParticipantParams{EventID: eventId, UserID: userId, Status: status})
 
 		if err != nil {
 			println("could not add participation")
@@ -125,7 +177,7 @@ func AddParticipanHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
-func DeleteParticipanHandler(q *db_entities.Queries) func(c *gin.Context) {
+func DeleteParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
 		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
@@ -168,17 +220,22 @@ func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 		}
 
 		participants := []db_entities.User{}
+		selected := []db_entities.User{}
 		nonParticipants := []db_entities.User{}
 
 		for _, maybe := range maybeParicipants {
-			if maybe.EventID.Valid {
-				participants = append(participants, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
-			} else {
+			if !maybe.EventID.Valid {
 				nonParticipants = append(nonParticipants, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
+			} else {
+				if maybe.Status.String == "selected" {
+					selected = append(selected, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
+				} else {
+					participants = append(participants, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
+				}
 			}
 		}
 
-		RenderPage(templs_event.UpdateEvent(&event, &participants, &nonParticipants))(c)
+		RenderPage(templs_event.UpdateEvent(&event, &participants, &nonParticipants, &selected))(c)
 	}
 }
 

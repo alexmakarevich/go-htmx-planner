@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS calendar_events (
 CREATE TABLE IF NOT EXISTS participations (
   user_id INTEGER  NOT NULL,
   event_id INTEGER  NOT NULL,
+  status      TEXT CHECK( status IN ('selected','invited','accepted','declined','unsure') )   NOT NULL,
+
   PRIMARY KEY (user_id, event_id)
 );
 

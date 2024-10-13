@@ -18,6 +18,7 @@ type CalendarEvent struct {
 type Participation struct {
 	UserID  int64
 	EventID int64
+	Status  string
 }
 
 type Session struct {
