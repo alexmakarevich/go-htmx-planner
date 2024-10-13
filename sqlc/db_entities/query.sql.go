@@ -7,8 +7,48 @@ package db_entities
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
+
+const addParticipant = `-- name: AddParticipant :many
+
+INSERT INTO participations (
+  user_id, event_id
+) VALUES (
+  ?, ?
+)
+RETURNING id, user_id, event_id
+`
+
+type AddParticipantParams struct {
+	UserID  int64
+	EventID int64
+}
+
+// PARTICIPATIONS
+func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) ([]Participation, error) {
+	rows, err := q.db.QueryContext(ctx, addParticipant, arg.UserID, arg.EventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Participation
+	for rows.Next() {
+		var i Participation
+		if err := rows.Scan(&i.ID, &i.UserID, &i.EventID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const createCalendaEvent = `-- name: CreateCalendaEvent :one
 INSERT INTO calendar_events (
@@ -89,6 +129,21 @@ func (q *Queries) DeleteCalendaEvent(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteParticipant = `-- name: DeleteParticipant :exec
+DELETE FROM participations
+WHERE user_id = ? AND event_id = ?
+`
+
+type DeleteParticipantParams struct {
+	UserID  int64
+	EventID int64
+}
+
+func (q *Queries) DeleteParticipant(ctx context.Context, arg DeleteParticipantParams) error {
+	_, err := q.db.ExecContext(ctx, deleteParticipant, arg.UserID, arg.EventID)
+	return err
+}
+
 const deleteSession = `-- name: DeleteSession :exec
 DELETE FROM sessions
 WHERE id = ?
@@ -126,15 +181,15 @@ func (q *Queries) FindUser(ctx context.Context, arg FindUserParams) (User, error
 	return i, err
 }
 
-const getCalendaEvent = `-- name: GetCalendaEvent :one
+const getCalendarEvent = `-- name: GetCalendarEvent :one
 
 SELECT id, title, date_time, owner_id FROM calendar_events
 WHERE id = ? LIMIT 1
 `
 
 // EVENTS:
-func (q *Queries) GetCalendaEvent(ctx context.Context, id int64) (CalendarEvent, error) {
-	row := q.db.QueryRowContext(ctx, getCalendaEvent, id)
+func (q *Queries) GetCalendarEvent(ctx context.Context, id int64) (CalendarEvent, error) {
+	row := q.db.QueryRowContext(ctx, getCalendarEvent, id)
 	var i CalendarEvent
 	err := row.Scan(
 		&i.ID,
@@ -143,6 +198,60 @@ func (q *Queries) GetCalendaEvent(ctx context.Context, id int64) (CalendarEvent,
 		&i.OwnerID,
 	)
 	return i, err
+}
+
+const getCalendarEventWithOwner = `-- name: GetCalendarEventWithOwner :one
+SELECT calendar_events.id, calendar_events.title, calendar_events.date_time, calendar_events.owner_id, users.user_name as owner_name  FROM calendar_events LEFT JOIN users ON calendar_events.owner_id = users.id
+WHERE calendar_events.id = ? LIMIT 1
+`
+
+type GetCalendarEventWithOwnerRow struct {
+	ID        int64
+	Title     string
+	DateTime  time.Time
+	OwnerID   int64
+	OwnerName sql.NullString
+}
+
+func (q *Queries) GetCalendarEventWithOwner(ctx context.Context, id int64) (GetCalendarEventWithOwnerRow, error) {
+	row := q.db.QueryRowContext(ctx, getCalendarEventWithOwner, id)
+	var i GetCalendarEventWithOwnerRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.DateTime,
+		&i.OwnerID,
+		&i.OwnerName,
+	)
+	return i, err
+}
+
+const getParticipantsByEventId = `-- name: GetParticipantsByEventId :many
+SELECT users.id, users.user_name, users.password FROM participations INNER JOIN users ON participations.user_id = users.id
+WHERE participations.user_id = ?
+`
+
+func (q *Queries) GetParticipantsByEventId(ctx context.Context, userID int64) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getParticipantsByEventId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(&i.ID, &i.UserName, &i.Password); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getSession = `-- name: GetSession :one
@@ -179,10 +288,12 @@ func (q *Queries) GetSessionWithUser(ctx context.Context, id string) (GetSession
 
 const getUser = `-- name: GetUser :one
 
+
 SELECT id, user_name, password FROM users
 WHERE id = ? LIMIT 1
 `
 
+// TODO: separate passwords cleanly
 // USERS:
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
@@ -267,6 +378,56 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(&i.ID, &i.UserName, &i.Password); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersInRelationToThisEvent = `-- name: ListUsersInRelationToThisEvent :many
+
+SELECT users.id, users.user_name, users.password, participations.event_id as event_id FROM users LEFT JOIN participations
+ON participations.user_id = users.id AND participations.event_id = ?
+`
+
+type ListUsersInRelationToThisEventRow struct {
+	ID       int64
+	UserName string
+	Password string
+	EventID  sql.NullInt64
+}
+
+// -- name: ListUsersInRelationToThisEvent :many
+// SELECT users.*, filtered_participations.event_id as event_id FROM users LEFT JOIN
+// (
+//
+//	SELECT * from participations
+//	WHERE event_id = ?
+//
+// ) as filtered_participations
+// ON filtered_participations.user_id = users.id;
+func (q *Queries) ListUsersInRelationToThisEvent(ctx context.Context, eventID int64) ([]ListUsersInRelationToThisEventRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersInRelationToThisEvent, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersInRelationToThisEventRow
+	for rows.Next() {
+		var i ListUsersInRelationToThisEventRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserName,
+			&i.Password,
+			&i.EventID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

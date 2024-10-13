@@ -1,8 +1,12 @@
 -- EVENTS:
 
--- name: GetCalendaEvent :one
+-- name: GetCalendarEvent :one
 SELECT * FROM calendar_events
 WHERE id = ? LIMIT 1;
+
+-- name: GetCalendarEventWithOwner :one
+SELECT calendar_events.*, users.user_name as owner_name  FROM calendar_events LEFT JOIN users ON calendar_events.owner_id = users.id
+WHERE calendar_events.id = ? LIMIT 1;
 
 -- name: ListCalendaEvents :many
 SELECT * FROM calendar_events
@@ -27,11 +31,25 @@ WHERE id = ?;
 DELETE FROM calendar_events
 WHERE id = ?;
 
+-- TODO: separate passwords cleanly
+
 -- USERS:
 
 -- name: GetUser :one
 SELECT * FROM users
 WHERE id = ? LIMIT 1;
+
+-- -- name: ListUsersInRelationToThisEvent :many
+-- SELECT users.*, filtered_participations.event_id as event_id FROM users LEFT JOIN 
+-- (
+--   SELECT * from participations
+--   WHERE event_id = ?
+-- ) as filtered_participations
+-- ON filtered_participations.user_id = users.id;
+
+-- name: ListUsersInRelationToThisEvent :many
+SELECT users.*, participations.event_id as event_id FROM users LEFT JOIN participations
+ON participations.user_id = users.id AND participations.event_id = ?;
 
 -- name: FindUser :one
 SELECT * FROM users
@@ -84,3 +102,22 @@ RETURNING *;
 -- name: DeleteSession :exec
 DELETE FROM sessions
 WHERE id = ?;
+
+
+-- PARTICIPATIONS
+
+-- name: AddParticipant :many
+INSERT INTO participations (
+  user_id, event_id
+) VALUES (
+  ?, ?
+)
+RETURNING *;
+
+-- name: DeleteParticipant :exec
+DELETE FROM participations
+WHERE user_id = ? AND event_id = ?;
+
+-- name: GetParticipantsByEventId :many
+SELECT users.* FROM participations INNER JOIN users ON participations.user_id = users.id
+WHERE participations.user_id = ?;

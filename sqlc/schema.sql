@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   owner_id  INTEGER  NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS participations (
+  id   INTEGER     PRIMARY KEY,
+  user_id INTEGER  NOT NULL,
+  event_id INTEGER  NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id   text     PRIMARY KEY,
   user_id  INTEGER  NOT NULL

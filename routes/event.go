@@ -106,17 +106,79 @@ func UpdateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
+func AddParticipanHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+
+		_, err := q.AddParticipant(c, db_entities.AddParticipantParams{EventID: eventId, UserID: userId})
+
+		if err != nil {
+			println("could not add participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationWithText(templs.BadReq, "could not add participation"))
+		} else {
+			println("succ")
+			c.Header("HX-Refresh", "true")
+			c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "added participant"))
+		}
+	}
+}
+
+func DeleteParticipanHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+
+		err := q.DeleteParticipant(c, db_entities.DeleteParticipantParams{EventID: eventId, UserID: userId})
+
+		if err != nil {
+			println("could not remove participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not remove participation"))
+		} else {
+			println("succ")
+			c.Header("HX-Refresh", "true")
+			c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "removed participant"))
+		}
+	}
+}
+
 func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
-		event, err := q.GetCalendaEvent(c, id)
+		event, err := q.GetCalendarEventWithOwner(c, id)
 		if err != nil {
 			log.Println("Nooooooooo")
 			log.Println(err.Error())
 			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
 			return
 		}
-		RenderPage(templs_event.UpdateEvent(&event))(c)
+
+		maybeParicipants, err := q.ListUsersInRelationToThisEvent(c, id)
+
+		log.Println("maybeParicipants")
+		log.Println(maybeParicipants)
+
+		if err != nil {
+			log.Println("Nooooooooo")
+			log.Println(err.Error())
+			c.HTML(http.StatusNotFound, "Not Found", templs.FoOhFo())
+			return
+		}
+
+		participants := []db_entities.User{}
+		nonParticipants := []db_entities.User{}
+
+		for _, maybe := range maybeParicipants {
+			if maybe.EventID.Valid {
+				participants = append(participants, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
+			} else {
+				nonParticipants = append(nonParticipants, db_entities.User{ID: maybe.ID, UserName: maybe.UserName})
+			}
+		}
+
+		RenderPage(templs_event.UpdateEvent(&event, &participants, &nonParticipants))(c)
 	}
 }
 
@@ -124,7 +186,7 @@ func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 func GetEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
-		ev, err := q.GetCalendaEvent(c, id)
+		ev, err := q.GetCalendarEvent(c, id)
 		if err != nil {
 			log.Println("Nooooooooo")
 			log.Println(err.Error())

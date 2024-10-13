@@ -76,7 +76,7 @@ func main() {
 		server.GET("/updateUser/:id", routes.UpdateUserPageHandler(queries))
 		server.PUT("/htmx/updateUser/:id", routes.UpdateUserHandler(queries))
 
-		server.DELETE("htmx/deleteUser/:id", routes.DeleteUserHandler(queries))
+		server.DELETE("/htmx/deleteUser/:id", routes.DeleteUserHandler(queries))
 
 		// EVENT
 		server.GET("/createEvent", routes.CreateEventPageHandler(queries))
@@ -88,7 +88,12 @@ func main() {
 		server.GET("/updateEvent/:id", routes.UpdateEventPageHandler(queries))
 		server.PUT("/htmx/updateEvent/:id", routes.UpdateEventHandler(queries))
 
-		server.DELETE("htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
+		server.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
+
+		// PARTICIPATION
+		server.POST("/htmx/addParticipant/:eventId/:userId", routes.AddParticipanHandler(queries))
+		server.DELETE("/htmx/removeParticipant/:eventId/:userId", routes.DeleteParticipanHandler(queries))
+
 	}
 
 	server.Run("localhost:19999")

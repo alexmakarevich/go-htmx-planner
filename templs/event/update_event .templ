@@ -3,9 +3,10 @@ package templs_event
 import (
 	"strconv"
 	"go-form/sqlc/db_entities"
+
 )
 
-templ UpdateEvent(event *db_entities.CalendarEvent) {
+templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow, participants *[]db_entities.User, ohterUsers *[]db_entities.User) {
 	<h2>
 		Update Event
 	</h2>
@@ -14,6 +15,7 @@ templ UpdateEvent(event *db_entities.CalendarEvent) {
 			hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
 			hx-swap="none"
 		>
+			<div style="padding: 2em 1em;">Owner: {event.OwnerName.String}</div>
 			<input
 				name="title"
 				placeholder="title"
@@ -28,5 +30,79 @@ templ UpdateEvent(event *db_entities.CalendarEvent) {
 			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
 			<button type="submit">update</button>
 		</form>
+		<div id="participants-container">
+			<h4>participants</h4>
+			if len(*participants) > 0 {
+			@ParticipantList(&event.ID, participants)
+			} else {
+				none
+			}
+
+		</div>
+		<div id="other-users-container">
+			<h4>invite</h4>
+			if len(*ohterUsers) > 0 {
+			@AddUsersDropDown(&event.ID, ohterUsers)
+			} else {
+				none to invite
+			}
+		</div>
 	</div>
 }
+
+templ BaseUsersDropDown(eventId *int64, participants *[]db_entities.User, additionalTemp func (eventId *int64, user *db_entities.User) templ.Component) {
+			<ul>
+				for _, user := range *participants {
+					<li>
+						{ user.UserName }
+						if additionalTemp != nil {
+							@additionalTemp(eventId, &user)
+						}
+					</li>
+				}
+			</ul>
+}
+
+
+
+templ AddButton(eventId *int64, user *db_entities.User) {
+	<button 
+	hx-post={ "/htmx/addParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
+	 > invite </button>
+}
+
+
+templ RemoveButton(eventId *int64, user *db_entities.User) {
+	<button 
+	class="delete"
+	hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
+	 > x </button>
+}
+
+templ AddUsersDropDown(eventId *int64, participants *[]db_entities.User) {
+	@BaseUsersDropDown(eventId, participants, AddButton)
+}
+
+templ ParticipantList(eventId *int64, participants *[]db_entities.User) {
+	@BaseUsersDropDown(eventId, participants, RemoveButton)
+}
+
+// templ TempUsersDropDown() {
+// 			<ul>
+// 				for _, user := range *participants {
+// 					<li>
+// 						{ user.UserName }
+// 					</li>
+// 				}
+// 			</ul>
+// }
+
+// templ UsersDropDown() {
+// 			<ul>
+// 				for _, user := range *participants {
+// 					<li>
+// 						{ user.UserName }
+// 					</li>
+// 				}
+// 			</ul>
+// }

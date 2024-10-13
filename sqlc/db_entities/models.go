@@ -15,6 +15,12 @@ type CalendarEvent struct {
 	OwnerID  int64
 }
 
+type Participation struct {
+	ID      int64
+	UserID  int64
+	EventID int64
+}
+
 type Session struct {
 	ID     string
 	UserID int64
