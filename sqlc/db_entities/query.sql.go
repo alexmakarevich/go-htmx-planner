@@ -18,7 +18,7 @@ INSERT INTO participations (
 ) VALUES (
   ?, ?
 )
-RETURNING id, user_id, event_id
+RETURNING user_id, event_id
 `
 
 type AddParticipantParams struct {
@@ -36,7 +36,7 @@ func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) 
 	var items []Participation
 	for rows.Next() {
 		var i Participation
-		if err := rows.Scan(&i.ID, &i.UserID, &i.EventID); err != nil {
+		if err := rows.Scan(&i.UserID, &i.EventID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
