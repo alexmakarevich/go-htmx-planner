@@ -131,4 +131,16 @@ WHERE user_id = ? AND event_id = ?;
 
 -- name: GetParticipantsByEventId :many
 SELECT users.* FROM participations INNER JOIN users ON participations.user_id = users.id
-WHERE participations.user_id = ?;
+WHERE participations.event_id = ? AND participations.status = ?;
+
+-- name: SearchUsersExcludingParticipants :many
+SELECT users.* FROM users LEFT JOIN 
+( SELECT * FROM participations WHERE event_id = CAST(@event_id AS INTEGER)) parts
+ON parts.user_id = users.id
+WHERE parts.user_id IS NULL AND user_name LIKE CONCAT('%', CAST(@query AS TEXT), '%')
+LIMIT 10
+; -- the cast is there for sqlc
+
+-- name: SearchParticipants :many
+SELECT users.* FROM users
+WHERE user_name LIKE CONCAT('%', CAST(@query AS TEXT), '%'); -- the cast is there for sqlc

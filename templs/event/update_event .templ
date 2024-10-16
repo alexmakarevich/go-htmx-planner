@@ -10,6 +10,15 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
  otherUsers *[]db_entities.User,
  selectedUsers *[]db_entities.User,
  ) {
+	<script>
+	// clear sear drop down when not focused
+	document.addEventListener('click', e => {
+    if (!document.getElementById("other-users-container").contains(e.target)) {
+		const parent = document.getElementById('search-users-container')
+		parent.replaceChildren()
+	}
+  	});
+	</script>
 	<h2>
 		Update Event
 	</h2>
@@ -31,10 +40,11 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
                 }"
 			/>
 			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
+			// TODO: enable update btn when there are changes
 			<button type="submit">update</button>
 		</form>
-		<div id="participants-container">
-			<h4>participants</h4>
+		<div id="participants-container" style="margin-bottom: 2rem;">
+			<h3 style="margin-top: 2rem">participants</h3>
 			if len(*participants) > 0 {
 			@ParticipantList(&event.ID, participants)
 			} else {
@@ -42,55 +52,112 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 			}
 
 		</div>
-		<div id="selected-container">
-			<h4>selected</h4>
-			if len(*selectedUsers) > 0 {
+
+
+		<div id="other-users-container" style="display: flex; flex-direction:column; justify-content:center; align-items:center"
+		>
+			<div style="display: flex; justify-content:center; align-items:center">
+				<div>
+					// swap=none  - so that oob works
+					<input type="search" 
+						name="search" placeholder="Begin Typing To Search Users..." 
+						hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
+						hx-trigger="input changed delay:500ms, search, click" 
+						hx-indicator=".htmx-indicator"
+						hx-swap="none"
+						style="margin:0"
+
+
+						>
+				</div>
 				<button 
-					hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(event.ID), 10)  }
+					disabled
+					id="invite-users"
+					style="flex-shrink:0; align-self:baseline;"
 				> invite users </button>
-			@SelectedList(&event.ID, selectedUsers)
-			} else {
-				none
-			}
+			</div>
+
+			<span class="htmx-indicator" style="position: absolute"> 
+				Searching... 
+			</span>
+
+		<ul id="selected-users-container" style=""></ul>
+		<ul id="search-users-container" style=""></ul>
 		</div>
-		<div id="other-users-container">
-			<h4>invite</h4>
-			if len(*otherUsers) > 0 {
-			@AddUsersDropDown(&event.ID, otherUsers)
-			} else {
-				none to invite
-			}
-		</div>
+
+
 	</div>
 }
 
 templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalTemp func (eventId *int64, user *db_entities.User) templ.Component) {
-			<ul>
+	<ul>
+		for _, user := range *participants {
+			<li>
+				{ user.UserName }
+				if additionalTemp != nil {
+					@additionalTemp(eventId, &user)
+				}
+			</li>
+		}
+	</ul>
+}
+
+templ SearchAndSelectUsers(eventId *int64, 
+potentialUsers *[]db_entities.User,
+selectedUsers *[]db_entities.User) {
+	@SelectedList(eventId, selectedUsers)
+	@SearchUserList(eventId, potentialUsers)
+	if len(*selectedUsers) > 0 {
+		<button 
+		hx-swap-oob="outerHTML:#invite-users"
+		id="invite-users"
+		style="flex-shrink:0; align-self:baseline;"
+		hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10)  }
+	> invite users </button>
+	} else {
+	<button 
+		disabled
+		hx-swap-oob="outerHTML:#invite-users"
+		id="invite-users"
+		style="flex-shrink:0; align-self:baseline;"
+	> invite users </button>
+	}
+}
+
+templ SelectedList(eventId *int64, participants *[]db_entities.User) {
+			<ul class="select-ul"
+			id="selected-users-container"
+			hx-swap-oob="outerHTML:#selected-users-container"
+			>
 				for _, user := range *participants {
-					<li>
-						{ user.UserName }
-						if additionalTemp != nil {
-							@additionalTemp(eventId, &user)
-						}
+					<li class="select-li">
+					<div class="select-content">{ user.UserName }</div>
+					<button 
+					class="delete select-delete"
+					hx-delete={ "/htmx/deselectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
+					> x </button>
 					</li>
 				}
 			</ul>
 }
 
-
-templ SelectButton(eventId *int64, user *db_entities.User) {
-	<button 
-	hx-post={ "/htmx/addParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) + "/" + "selected"  }
-	 > select </button>
-}
-
-templ DeselectButton(eventId *int64, user *db_entities.User) {
-	<div>
-		<button 
-		class="delete"
-		hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
-		> X </button>
-	 </div>
+templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
+	<ul class="select-ul" style="display: block;"
+		hx-swap-oob="outerHTML:#search-users-container"
+		id="search-users-container"
+	>
+		for _, user := range *participants {
+			<li class="select-li">
+			<div class="select-content">{ user.UserName }</div>
+			<button 
+			hx-post={ "/htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) }
+			> select </button>
+			</li>
+		}
+		if (len(*participants) == 0 ) {
+			<span>no users found</span>
+		}
+	</ul>
 }
 
 templ RemoveButton(eventId *int64, user *db_entities.User) {
@@ -98,14 +165,6 @@ templ RemoveButton(eventId *int64, user *db_entities.User) {
 	class="delete"
 	hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
 	>x</button>
-}
-
-templ AddUsersDropDown(eventId *int64, participants *[]db_entities.User) {
-	@BaseUserList(eventId, participants, SelectButton)
-}
-
-templ SelectedList(eventId *int64, participants *[]db_entities.User) {
-	@BaseUserList(eventId, participants, DeselectButton)
 }
 
 templ ParticipantList(eventId *int64, participants *[]db_entities.User) {

@@ -5,6 +5,7 @@
 .red {
   background-color: red;
 }
+
 .green {
   background-color: green;
 }
@@ -12,13 +13,16 @@
 .auto-hide {
   animation: basic-hide 10s forwards;
 }
+
 @keyframes basic-hide {
-  0%  {
+  0% {
     opacity: 100%;
   }
+
   80% {
     opacity: 100%;
   }
+
   to {
     opacity: 0;
     display: none;
@@ -30,7 +34,7 @@
   background-color: dark-gray;
 }
 
-.main-menu > li {
+.main-menu>li {
   list-style: none;
   padding: 1rem;
 }
@@ -40,7 +44,37 @@
 }
 
 .delete {
-  background-color:rgb(158, 56, 56);
-  color:antiquewhite;
+  background-color: rgb(158, 56, 56);
+  color: antiquewhite;
   border: none;
+}
+
+.select-ul {
+  display: flex;
+  padding: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.select-li {
+  list-style: none;
+  display: flex;
+  margin: 0.5rem;
+  font-size: smaller;
+}
+
+.select-content {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  background-color: rgb(65, 65, 65);
+  border-radius: 5px 0 0 5px;
+  opacity: 50%;
+
+}
+
+.select-delete {
+  border-radius: 0 5px 5px 0;
+  opacity: 50%;
+  font-size: smaller;
 }

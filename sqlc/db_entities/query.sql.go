@@ -213,11 +213,16 @@ func (q *Queries) GetCalendarEventWithOwner(ctx context.Context, id int64) (GetC
 
 const getParticipantsByEventId = `-- name: GetParticipantsByEventId :many
 SELECT users.id, users.user_name, users.password FROM participations INNER JOIN users ON participations.user_id = users.id
-WHERE participations.user_id = ?
+WHERE participations.event_id = ? AND participations.status = ?
 `
 
-func (q *Queries) GetParticipantsByEventId(ctx context.Context, userID int64) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getParticipantsByEventId, userID)
+type GetParticipantsByEventIdParams struct {
+	EventID int64
+	Status  string
+}
+
+func (q *Queries) GetParticipantsByEventId(ctx context.Context, arg GetParticipantsByEventIdParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getParticipantsByEventId, arg.EventID, arg.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -444,6 +449,72 @@ func (q *Queries) ListUsersInRelationToThisEvent(ctx context.Context, eventID in
 			&i.EventID,
 			&i.Status,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchParticipants = `-- name: SearchParticipants :many
+; -- the cast is there for sqlc
+
+SELECT users.id, users.user_name, users.password FROM users
+WHERE user_name LIKE CONCAT('%', CAST(?1 AS TEXT), '%')
+`
+
+func (q *Queries) SearchParticipants(ctx context.Context, query string) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, searchParticipants, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(&i.ID, &i.UserName, &i.Password); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchUsersExcludingParticipants = `-- name: SearchUsersExcludingParticipants :many
+SELECT users.id, users.user_name, users.password FROM users LEFT JOIN 
+( SELECT user_id, event_id, status FROM participations WHERE event_id = CAST(?1 AS INTEGER)) parts
+ON parts.user_id = users.id
+WHERE parts.user_id IS NULL AND user_name LIKE CONCAT('%', CAST(?2 AS TEXT), '%')
+LIMIT 10
+`
+
+type SearchUsersExcludingParticipantsParams struct {
+	EventID int64
+	Query   string
+}
+
+func (q *Queries) SearchUsersExcludingParticipants(ctx context.Context, arg SearchUsersExcludingParticipantsParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, searchUsersExcludingParticipants, arg.EventID, arg.Query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(&i.ID, &i.UserName, &i.Password); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

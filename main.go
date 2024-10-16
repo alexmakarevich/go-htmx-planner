@@ -91,6 +91,10 @@ func main() {
 		server.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
 
 		// PARTICIPATION
+		server.GET("/htmx/searchParticipants/:eventId", routes.SearchParticipantsHandler(queries))
+		server.POST("/htmx/selectParticipant/:eventId/:userId", routes.SelectParticipantHanlder(queries))
+		server.DELETE("/htmx/deselectParticipant/:eventId/:userId", routes.DeselectParticipantHanlder(queries))
+
 		server.POST("/htmx/addParticipant/:eventId/:userId/:status", routes.AddParticipantHandler(queries))
 		server.PUT("/htmx/inviteParticipants/:eventId", routes.InviteParticipantsHandler(queries))
 		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))

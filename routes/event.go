@@ -106,6 +106,74 @@ func UpdateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
+func RefreshSearchAndSelect(q *db_entities.Queries, c *gin.Context) {
+	eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+	fmt.Println(eventId)
+
+	query := c.Query("search")
+	users, err := q.SearchUsersExcludingParticipants(c, db_entities.SearchUsersExcludingParticipantsParams{Query: query, EventID: eventId})
+
+	if err != nil {
+		println("could not search")
+		fmt.Println(err.Error())
+		c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not search"))
+		return
+	}
+
+	selected, err := q.GetParticipantsByEventId(c, db_entities.GetParticipantsByEventIdParams{Status: "selected", EventID: eventId})
+
+	if err != nil {
+		println("could not search")
+		fmt.Println(err.Error())
+		c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not search"))
+		return
+	}
+
+	c.HTML(http.StatusOK, "", templs_event.SearchAndSelectUsers(&eventId, &users, &selected))
+}
+
+func SearchParticipantsHandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		RefreshSearchAndSelect(q, c)
+	}
+}
+
+func SelectParticipantHanlder(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+
+		_, err := q.AddParticipant(c, db_entities.AddParticipantParams{EventID: eventId, UserID: userId, Status: "selected"})
+
+		if err != nil {
+			println("could not add participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationWithText(templs.BadReq, "could not add participation"))
+			return
+		}
+
+		RefreshSearchAndSelect(q, c)
+	}
+}
+
+func DeselectParticipantHanlder(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
+		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
+
+		err := q.DeleteParticipant(c, db_entities.DeleteParticipantParams{EventID: eventId, UserID: userId})
+
+		if err != nil {
+			println("could not deselect participation")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.NotificationWithText(templs.BadReq, "could not deselect"))
+			return
+		}
+
+		RefreshSearchAndSelect(q, c)
+	}
+}
+
 func InviteParticipantsHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
@@ -136,8 +204,6 @@ func UpdateParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
 		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
 		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
 		status := c.Param("status")
-
-		fmt.Println("UPSERT")
 
 		fmt.Println(eventId)
 		fmt.Println(userId)
