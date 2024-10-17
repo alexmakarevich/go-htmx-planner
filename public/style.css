@@ -56,6 +56,13 @@
   flex-wrap: wrap;
 }
 
+.participants-ul {
+  display: flex;
+  padding: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .select-li {
   list-style: none;
   display: flex;
@@ -70,11 +77,44 @@
   background-color: rgb(65, 65, 65);
   border-radius: 5px 0 0 5px;
   opacity: 50%;
+}
 
+.participants-content {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  background-color: rgb(78, 78, 78);
+  border-radius: 5px 0 0 5px;
 }
 
 .select-delete {
   border-radius: 0 5px 5px 0;
   opacity: 50%;
   font-size: smaller;
+}
+
+article {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 80rem;
+}
+
+.standard-box {
+  margin: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  
+  flex-grow: 1;
+  flex-basis: 30rem;
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
 }

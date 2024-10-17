@@ -11,7 +11,7 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 	selectedUsers *[]db_entities.User,
 ) {
 	<script>
-	// clear sear drop down when not focused
+	// clear search drop down when not focused
 	document.addEventListener('click', e => {
 		if (!document.getElementById("other-users-container").contains(e.target)) {
 			const parent = document.getElementById('search-users-container')
@@ -22,59 +22,82 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 	<h2>
 		Update Event
 	</h2>
-	<div>
-		<form hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) } hx-swap="none">
-			<div style="padding: 2em 1em;">Owner: { event.OwnerName.String }</div>
-			<input
-				name="title"
-				placeholder="title"
-				value={ event.Title }
-				required
-				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
-				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+	<div style="padding-bottom: 1rem">Owner: { event.OwnerName.String }</div>
+	<main>
+		<section class="standard-box">
+			<form
+				hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
+				hx-swap="none"
+				style="display: flex;
+					flex-direction: column;
+					flex-grow: 1;
+					justify-content: center;"
+			>
+				<input
+					name="title"
+					placeholder="title"
+					style="font-size: 2rem; font-weight:bold"
+					value={ event.Title }
+					required
+					onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+					hx-on:htmx:validation:validate="if(this.value.length < 1) {
                     this.setCustomValidity('The title must be at least 1 char long') // set the validation error
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
-			/>
-			<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
-			// TODO: enable update btn when there are changes
-			<button type="submit">update</button>
-		</form>
-		<div id="participants-container" style="margin-bottom: 2rem;">
-			<h3 style="margin-top: 2rem">participants</h3>
+				/>
+				<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
+				// TODO: enable update btn when there are changes
+				<button type="submit">update</button>
+			</form>
+		</section>
+		<section class="standard-box">
+			<h3 style="width:100%; text-align:center">Participants</h3>
 			if len(*participants) > 0 {
 				@ParticipantList(&event.ID, participants)
 			} else {
 				none
 			}
-		</div>
-		<div
-			id="other-users-container"
-			style="display: flex; flex-direction:column; justify-content:center; align-items:center"
-		>
-			<div style="display: flex; justify-content:center; align-items:center">
-				<div>
-					// swap=none - so that oob works
-					<input
-						type="search"
-						name="search"
-						placeholder="Begin Typing To Search Users..."
-						hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
-						hx-trigger="input changed delay:500ms, search, click"
-						hx-indicator=".htmx-indicator"
-						hx-swap="none"
-						style="margin:0"
-					/>
+			<div
+				id="other-users-container"
+				style="display: block; flex-direction:column; justify-content:center; align-items:center; position:sticky;
+				margin-top: 1rem;"
+			>
+				<div style="display: flex; justify-content:center; align-items:center">
+					<div>
+						// swap=none - so that oob works
+						<input
+							type="search"
+							name="search"
+							placeholder="Search users to add..."
+							hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
+							hx-trigger="input changed delay:500ms, search, click"
+							hx-indicator=".htmx-indicator"
+							hx-swap="none"
+							style="margin:0"
+						/>
+					</div>
+					<button
+						disabled
+						id="invite-users"
+						style="margin-left: 1rem;
+								flex-shrink:0; 
+								align-self:baseline;"
+					>invite users </button>
 				</div>
-				<button disabled id="invite-users" style="flex-shrink:0; align-self:baseline;">invite users </button>
+				<div
+					style="	position: absolute;
+					width: 100%;"
+				>
+					<span class="htmx-indicator" style="width:100%">
+						Searching...
+					</span>
+					<ul id="selected-users-container" style=""></ul>
+					<ul id="search-users-container" style=""></ul>
+				</div>
 			</div>
-			<span class="htmx-indicator" style="position: absolute">
-				Searching...
-			</span>
-			<ul id="selected-users-container" style=""></ul>
-			<ul id="search-users-container" style=""></ul>
-		</div>
-	</div>
+		</section>
+	</main>
+	// TODO: reset selection route
 }
 
 templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalTemp func(eventId *int64, user *db_entities.User) templ.Component) {
@@ -99,18 +122,33 @@ templ SearchAndSelectUsers(eventId *int64,
 		<button
 			hx-swap-oob="outerHTML:#invite-users"
 			id="invite-users"
-			style="flex-shrink:0; align-self:baseline;"
+			style="
+			margin-left: 1rem;
+			flex-shrink:0; 
+			align-self:baseline;"
 			hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10) }
 		>invite users </button>
 	} else {
-		<button disabled hx-swap-oob="outerHTML:#invite-users" id="invite-users" style="flex-shrink:0; align-self:baseline;">
+		<button
+			disabled
+			hx-swap-oob="outerHTML:#invite-users"
+			id="invite-users"
+			style="
+			margin-left: 1rem;
+			flex-shrink:0;
+			align-self:baseline;"
+		>
 			invite users 
 		</button>
 	}
 }
 
 templ SelectedList(eventId *int64, participants *[]db_entities.User) {
-	<ul class="select-ul" id="selected-users-container" hx-swap-oob="outerHTML:#selected-users-container">
+	<ul
+		class="select-ul"
+		id="selected-users-container"
+		hx-swap-oob="outerHTML:#selected-users-container"
+	>
 		for _, user := range *participants {
 			<li class="select-li">
 				<div class="select-content">{ user.UserName }</div>
@@ -127,13 +165,17 @@ templ SelectedList(eventId *int64, participants *[]db_entities.User) {
 templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
 	<ul
 		class="select-ul"
-		style="display: block;"
+		style="
+			    display: flex;
+				align-items: stretch;
+				flex-direction: column;
+				"
 		hx-swap-oob="outerHTML:#search-users-container"
 		id="search-users-container"
 	>
 		for _, user := range *participants {
 			<li class="select-li">
-				<div class="select-content">{ user.UserName }</div>
+				<div class="select-content" style="flex-grow: 1;">{ user.UserName }</div>
 				<button
 					hx-post={ "/htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
 			strconv.FormatUint(uint64(user.ID), 10) }
@@ -141,19 +183,25 @@ templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
 			</li>
 		}
 		if (len(*participants) == 0 ) {
-			<span>no users found</span>
+			<span style="width: 100%; text-align:center">no users found</span>
 		}
 	</ul>
 }
 
 templ RemoveButton(eventId *int64, user *db_entities.User) {
-	<button
-		class="delete"
-		hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
-	strconv.FormatUint(uint64(user.ID), 10) }
-	>x</button>
 }
 
 templ ParticipantList(eventId *int64, participants *[]db_entities.User) {
-	@BaseUserList(eventId, participants, RemoveButton)
+	<ul class="participants-ul" id="participants-container" hx-swap-oob="outerHTML:#selected-users-container">
+		for _, user := range *participants {
+			<li class="select-li">
+				<div class="participants-content">{ user.UserName }</div>
+				<button
+					class="delete"
+					hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+	strconv.FormatUint(uint64(user.ID), 10) }
+				>x</button>
+			</li>
+		}
+	</ul>
 }
