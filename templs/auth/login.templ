@@ -1,43 +1,40 @@
 package templs_auth
 
-import (
-    templs "go-form/templs/generic"
-)
+import templs "go-form/templs/generic"
 
-templ LoginPage () {
-    @templs.EmptyPage() {
-	<h2>
-		Log In
-	</h2>
-	<div>
-		<form
-			hx-post="/htmx/login"
-			hx-target="#notification"
-		>
-			<input
-				name="username"
-				placeholder="username"
-				required
-				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
-				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+templ LoginPage() {
+	@templs.EmptyPage() {
+		<h2>
+			Log In
+		</h2>
+		<div>
+			<form
+				hx-post="/htmx/login"
+				hx-target="#notification"
+			>
+				<input
+					name="username"
+					placeholder="username"
+					required
+					onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+					hx-on:htmx:validation:validate="if(this.value.length < 1) {
                     this.setCustomValidity('The username must be at least 1 char long') // set the validation error
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
-			/>
-
-            // TODO: better password validation
-            <input
-				name="password"
-				placeholder="password"
-				required
-				onkeyup="this.setCustomValidity('') // reset the validation on keyup"
-				hx-on:htmx:validation:validate="if(this.value.length < 1) {
+				/>
+				// TODO: better password validation
+				<input
+					name="password"
+					placeholder="password"
+					required
+					onkeyup="this.setCustomValidity('') // reset the validation on keyup"
+					hx-on:htmx:validation:validate="if(this.value.length < 1) {
                     this.setCustomValidity('The password may no be empty') // set the validation error
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
-			/>
-			<button type="submit">log in</button>
-		</form>
-	</div>
-    }
+				/>
+				<button type="submit">log in</button>
+			</form>
+		</div>
+	}
 }

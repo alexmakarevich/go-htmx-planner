@@ -1,31 +1,31 @@
 package templs
 
-// should be used when logged in 
+// should be used when logged in
 templ Page(content templ.Component) {
-			@EmptyPage(){
-				<header>
-					<menu class="main-menu">
-						<li>
-							<a href="/">home</a>
-						</li>
-						<li>
-							<a href="/events">events</a>
-						</li>
-						<li>
-							<a href="/users">users</a>
-						</li>
-						<li>
-							<a href="/settings">settings</a>
-						</li>
-						<li>
-							// TODO: cursor:pointer in a nicer way?
-							// TODO: "are you sure?""
-							<a hx-post="/htmx/logout" style="cursor:pointer">log out</a>
-						</li>
-					</menu>
-				</header>
-				<article>
-					@content
-				</article>
-			}
+	@EmptyPage() {
+		<header>
+			<menu class="main-menu">
+				<li>
+					<a href="/">home</a>
+				</li>
+				<li>
+					<a href="/events">events</a>
+				</li>
+				<li>
+					<a href="/users">users</a>
+				</li>
+				<li>
+					<a href="/settings">settings</a>
+				</li>
+				<li>
+					// TODO: cursor:pointer in a nicer way?
+					// TODO: "are you sure?""
+					<a hx-post="/htmx/logout" style="cursor:pointer">log out</a>
+				</li>
+			</menu>
+		</header>
+		<article>
+			@content
+		</article>
+	}
 }

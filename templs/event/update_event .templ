@@ -1,33 +1,30 @@
 package templs_event
 
 import (
-	"strconv"
 	"go-form/sqlc/db_entities"
+	"strconv"
 )
 
 templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
- participants *[]db_entities.User,
- otherUsers *[]db_entities.User,
- selectedUsers *[]db_entities.User,
- ) {
+	participants *[]db_entities.User,
+	otherUsers *[]db_entities.User,
+	selectedUsers *[]db_entities.User,
+) {
 	<script>
 	// clear sear drop down when not focused
 	document.addEventListener('click', e => {
-    if (!document.getElementById("other-users-container").contains(e.target)) {
-		const parent = document.getElementById('search-users-container')
-		parent.replaceChildren()
-	}
-  	});
-	</script>
+		if (!document.getElementById("other-users-container").contains(e.target)) {
+			const parent = document.getElementById('search-users-container')
+			parent.replaceChildren()
+		}
+	});
+</script>
 	<h2>
 		Update Event
 	</h2>
 	<div>
-		<form
-			hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
-			hx-swap="none"
-		>
-			<div style="padding: 2em 1em;">Owner: {event.OwnerName.String}</div>
+		<form hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) } hx-swap="none">
+			<div style="padding: 2em 1em;">Owner: { event.OwnerName.String }</div>
 			<input
 				name="title"
 				placeholder="title"
@@ -46,50 +43,41 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 		<div id="participants-container" style="margin-bottom: 2rem;">
 			<h3 style="margin-top: 2rem">participants</h3>
 			if len(*participants) > 0 {
-			@ParticipantList(&event.ID, participants)
+				@ParticipantList(&event.ID, participants)
 			} else {
 				none
 			}
-
 		</div>
-
-
-		<div id="other-users-container" style="display: flex; flex-direction:column; justify-content:center; align-items:center"
+		<div
+			id="other-users-container"
+			style="display: flex; flex-direction:column; justify-content:center; align-items:center"
 		>
 			<div style="display: flex; justify-content:center; align-items:center">
 				<div>
-					// swap=none  - so that oob works
-					<input type="search" 
-						name="search" placeholder="Begin Typing To Search Users..." 
+					// swap=none - so that oob works
+					<input
+						type="search"
+						name="search"
+						placeholder="Begin Typing To Search Users..."
 						hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
-						hx-trigger="input changed delay:500ms, search, click" 
+						hx-trigger="input changed delay:500ms, search, click"
 						hx-indicator=".htmx-indicator"
 						hx-swap="none"
 						style="margin:0"
-
-
-						>
+					/>
 				</div>
-				<button 
-					disabled
-					id="invite-users"
-					style="flex-shrink:0; align-self:baseline;"
-				> invite users </button>
+				<button disabled id="invite-users" style="flex-shrink:0; align-self:baseline;">invite users </button>
 			</div>
-
-			<span class="htmx-indicator" style="position: absolute"> 
-				Searching... 
+			<span class="htmx-indicator" style="position: absolute">
+				Searching...
 			</span>
-
-		<ul id="selected-users-container" style=""></ul>
-		<ul id="search-users-container" style=""></ul>
+			<ul id="selected-users-container" style=""></ul>
+			<ul id="search-users-container" style=""></ul>
 		</div>
-
-
 	</div>
 }
 
-templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalTemp func (eventId *int64, user *db_entities.User) templ.Component) {
+templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalTemp func(eventId *int64, user *db_entities.User) templ.Component) {
 	<ul>
 		for _, user := range *participants {
 			<li>
@@ -102,56 +90,54 @@ templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalT
 	</ul>
 }
 
-templ SearchAndSelectUsers(eventId *int64, 
-potentialUsers *[]db_entities.User,
-selectedUsers *[]db_entities.User) {
+templ SearchAndSelectUsers(eventId *int64,
+	potentialUsers *[]db_entities.User,
+	selectedUsers *[]db_entities.User) {
 	@SelectedList(eventId, selectedUsers)
 	@SearchUserList(eventId, potentialUsers)
 	if len(*selectedUsers) > 0 {
-		<button 
-		hx-swap-oob="outerHTML:#invite-users"
-		id="invite-users"
-		style="flex-shrink:0; align-self:baseline;"
-		hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10)  }
-	> invite users </button>
+		<button
+			hx-swap-oob="outerHTML:#invite-users"
+			id="invite-users"
+			style="flex-shrink:0; align-self:baseline;"
+			hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10) }
+		>invite users </button>
 	} else {
-	<button 
-		disabled
-		hx-swap-oob="outerHTML:#invite-users"
-		id="invite-users"
-		style="flex-shrink:0; align-self:baseline;"
-	> invite users </button>
+		<button disabled hx-swap-oob="outerHTML:#invite-users" id="invite-users" style="flex-shrink:0; align-self:baseline;">
+			invite users 
+		</button>
 	}
 }
 
 templ SelectedList(eventId *int64, participants *[]db_entities.User) {
-			<ul class="select-ul"
-			id="selected-users-container"
-			hx-swap-oob="outerHTML:#selected-users-container"
-			>
-				for _, user := range *participants {
-					<li class="select-li">
-					<div class="select-content">{ user.UserName }</div>
-					<button 
+	<ul class="select-ul" id="selected-users-container" hx-swap-oob="outerHTML:#selected-users-container">
+		for _, user := range *participants {
+			<li class="select-li">
+				<div class="select-content">{ user.UserName }</div>
+				<button
 					class="delete select-delete"
-					hx-delete={ "/htmx/deselectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
-					> x </button>
-					</li>
-				}
-			</ul>
+					hx-delete={ "/htmx/deselectParticipant/" +
+			strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) }
+				>x </button>
+			</li>
+		}
+	</ul>
 }
 
 templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
-	<ul class="select-ul" style="display: block;"
+	<ul
+		class="select-ul"
+		style="display: block;"
 		hx-swap-oob="outerHTML:#search-users-container"
 		id="search-users-container"
 	>
 		for _, user := range *participants {
 			<li class="select-li">
-			<div class="select-content">{ user.UserName }</div>
-			<button 
-			hx-post={ "/htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) }
-			> select </button>
+				<div class="select-content">{ user.UserName }</div>
+				<button
+					hx-post={ "/htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+			strconv.FormatUint(uint64(user.ID), 10) }
+				>select </button>
 			</li>
 		}
 		if (len(*participants) == 0 ) {
@@ -161,9 +147,10 @@ templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
 }
 
 templ RemoveButton(eventId *int64, user *db_entities.User) {
-	<button 
-	class="delete"
-	hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10)  }
+	<button
+		class="delete"
+		hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+	strconv.FormatUint(uint64(user.ID), 10) }
 	>x</button>
 }
 
