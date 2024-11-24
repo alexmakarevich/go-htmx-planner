@@ -129,7 +129,7 @@ func RefreshSearchAndSelect(q *db_entities.Queries, c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "", templs_event.SearchAndSelectUsers(&eventId, &users, &selected))
+	c.HTML(http.StatusOK, "", templs_event.SearchAndSelectUsers(&eventId, &users, &selected, true))
 }
 
 func SearchParticipantsHandler(q *db_entities.Queries) func(c *gin.Context) {
@@ -199,7 +199,14 @@ func InviteParticipantsHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
-func UpdateParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
+type UpdateParticipantResponse int
+
+const (
+	Notification UpdateParticipantResponse = iota
+	NewStatusAndButttons
+)
+
+func UpdateParticipantHandler(q *db_entities.Queries, responseKind UpdateParticipantResponse) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		eventId, _ := strconv.ParseInt(c.Param("eventId"), 10, 64)
 		userId, _ := strconv.ParseInt(c.Param("userId"), 10, 64)
@@ -216,9 +223,17 @@ func UpdateParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
 			fmt.Println(err.Error())
 			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, "could not add participation"))
 		} else {
-			println("succ")
-			c.Header("HX-Refresh", "true")
-			c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "added participant"))
+			switch responseKind {
+			case Notification:
+				c.Header("HX-Refresh", "true")
+				c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "added participant"))
+			case NewStatusAndButttons:
+				c.Header("HX-Refresh", "true")
+				c.HTML(http.StatusCreated, "", templs.NotificationOobWithText(templs.Success, "NOT IMPLEMENTED"))
+			default:
+				GenericInvalidStateHandler(c, "impossible case", nil)
+			}
+
 		}
 	}
 }
@@ -262,7 +277,7 @@ func DeleteParticipantHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
-func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
+func ViewOrUpdateEventPageHandler(q *db_entities.Queries, isUpdate bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 		event, err := q.GetCalendarEventWithOwner(c, id)
@@ -301,7 +316,25 @@ func UpdateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 			}
 		}
 
-		RenderPage(templs_event.UpdateEvent(&event, &participants, &nonParticipants, &selected))(c)
+		RenderPage(templs_event.ViewOrUpdateEvent(&event, &participants, &nonParticipants, &selected, isUpdate))(c)
+	}
+}
+
+func ListInvitesPagehandler(q *db_entities.Queries) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		session := GetAuthContext(c)
+
+		invites, err := q.ListParticipationsByInviteeId(c, session.UserID)
+
+		if err != nil {
+			GenericDbErrorHandler(c, err)
+			return
+		}
+
+		log.Println(invites)
+
+		RenderPage(templs_event.ListInvites(&invites))(c)
+
 	}
 }
 

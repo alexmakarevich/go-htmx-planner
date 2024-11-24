@@ -5,23 +5,23 @@ import (
 	"strconv"
 )
 
-templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
+templ ViewOrUpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 	participants *[]db_entities.User,
 	otherUsers *[]db_entities.User,
 	selectedUsers *[]db_entities.User,
+	isEdit bool,
 ) {
-	<script>
-	// clear search drop down when not focused
-	document.addEventListener('click', e => {
-		if (!document.getElementById("other-users-container").contains(e.target)) {
-			const parent = document.getElementById('search-users-container')
-			parent.replaceChildren()
-		}
-	});
-</script>
-	<h2>
-		Update Event
-	</h2>
+	if (isEdit) {
+		<script>
+		// clear search drop down when not focused
+		document.addEventListener('click', e => {
+			if (!document.getElementById("other-users-container").contains(e.target)) {
+				const parent = document.getElementById('search-users-container')
+				parent.replaceChildren()
+			}
+		});
+		</script>
+	}
 	<div style="padding-bottom: 1rem">Owner: { event.OwnerName.String }</div>
 	<main>
 		<section class="standard-box">
@@ -34,6 +34,7 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 					justify-content: center;"
 			>
 				<input
+					readonly?={ !isEdit }
 					name="title"
 					placeholder="title"
 					style="font-size: 2rem; font-weight:bold"
@@ -45,60 +46,69 @@ templ UpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
 				/>
-				<input type="datetime-local" name="date-time" value={ event.DateTime.Format("2006-01-02T03:04") }/>
+				<input
+					readonly?={ !isEdit }
+					type="datetime-local"
+					name="date-time"
+					value={ event.DateTime.Format("2006-01-02T03:04") }
+				/>
 				// TODO: enable update btn when there are changes
-				<button type="submit">update</button>
+				if isEdit {
+					<button type="submit">update</button>
+				}
 			</form>
 		</section>
 		<section class="standard-box">
 			<h3 style="width:100%; text-align:center">Participants</h3>
 			if len(*participants) > 0 {
-				@ParticipantList(&event.ID, participants)
+				@ParticipantList(&event.ID, participants, isEdit)
 			} else {
 				none
 			}
-			<div
-				id="other-users-container"
-				style="display: block; flex-direction:column; justify-content:center; align-items:center; position:sticky;
+			if (isEdit) {
+				<div
+					id="other-users-container"
+					style="display: block; flex-direction:column; justify-content:center; align-items:center; position:sticky;
 				margin-top: 1rem;"
-			>
-				<div style="display: flex; justify-content:center; align-items:center">
-					<div>
-						// swap=none - so that oob works
-						<input
-							type="search"
-							name="search"
-							placeholder="Search users to add..."
-							hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
-							hx-trigger="input changed delay:500ms, search, click"
-							hx-indicator=".htmx-indicator"
-							hx-swap="none"
-							style="margin:0"
-						/>
-					</div>
-					<button
-						disabled
-						id="invite-users"
-						style="margin-left: 1rem;
+				>
+					<div style="display: flex; justify-content:center; align-items:center">
+						<div>
+							// swap=none - so that oob works
+							<input
+								type="search"
+								name="search"
+								placeholder="Search users to add..."
+								hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
+								hx-trigger="input changed delay:500ms, search, click"
+								hx-indicator=".htmx-indicator"
+								hx-swap="none"
+								style="margin:0"
+							/>
+						</div>
+						<button
+							disabled
+							id="invite-users"
+							style="margin-left: 1rem;
 								flex-shrink:0; 
 								align-self:baseline;"
-					>invite users </button>
-				</div>
-				<div
-					style=" position: absolute;
+						>invite users </button>
+					</div>
+					<div
+						style=" position: absolute;
 							width: 100%;
 							display: flex;
 							justify-content: center;
 							align-items: center;
 							flex-direction: column;"
-				>
-					<span class="htmx-indicator" style="width:100%">
-						Searching...
-					</span>
-					<ul id="selected-users-container" style=""></ul>
-					<ul id="search-users-container" style=""></ul>
+					>
+						<span class="htmx-indicator" style="width:100%">
+							Searching...
+						</span>
+						<ul id="selected-users-container" style=""></ul>
+						<ul id="search-users-container" style=""></ul>
+					</div>
 				</div>
-			</div>
+			}
 		</section>
 	</main>
 	// TODO: reset selection route
@@ -119,8 +129,8 @@ templ BaseUserList(eventId *int64, participants *[]db_entities.User, additionalT
 
 templ SearchAndSelectUsers(eventId *int64,
 	potentialUsers *[]db_entities.User,
-	selectedUsers *[]db_entities.User) {
-	@SelectedList(eventId, selectedUsers)
+	selectedUsers *[]db_entities.User, isEdit bool) {
+	@SelectedList(eventId, selectedUsers, isEdit)
 	@SearchUserList(eventId, potentialUsers)
 	if len(*selectedUsers) > 0 {
 		<button
@@ -147,7 +157,7 @@ templ SearchAndSelectUsers(eventId *int64,
 	}
 }
 
-templ SelectedList(eventId *int64, participants *[]db_entities.User) {
+templ SelectedList(eventId *int64, participants *[]db_entities.User, isEdit bool) {
 	<ul
 		class="select-ul"
 		id="selected-users-container"
@@ -156,11 +166,13 @@ templ SelectedList(eventId *int64, participants *[]db_entities.User) {
 		for _, user := range *participants {
 			<li class="select-li">
 				<div class="select-content">{ user.UserName }</div>
-				<button
-					class="delete select-delete"
-					hx-delete={ "/htmx/deselectParticipant/" +
+				if isEdit {
+					<button
+						class="delete select-delete"
+						hx-delete={ "/htmx/deselectParticipant/" +
 			strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) }
-				>x </button>
+					>x </button>
+				}
 			</li>
 		}
 	</ul>
@@ -195,17 +207,34 @@ templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
 templ RemoveButton(eventId *int64, user *db_entities.User) {
 }
 
-templ ParticipantList(eventId *int64, participants *[]db_entities.User) {
+templ ParticipantList(eventId *int64, participants *[]db_entities.User, isEdit bool) {
 	<ul class="participants-ul" id="participants-container" hx-swap-oob="outerHTML:#selected-users-container">
 		for _, user := range *participants {
 			<li class="select-li">
 				<div class="participants-content">{ user.UserName }</div>
-				<button
-					class="delete"
-					hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+				if isEdit {
+					<button
+						class="delete"
+						hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
 	strconv.FormatUint(uint64(user.ID), 10) }
-				>x</button>
+					>x</button>
+				}
 			</li>
 		}
 	</ul>
 }
+
+// templ InviteBtns(invite db_entities.ListParticipationsByInviteeIdRow) {
+// 	<div>
+// 		status: { invite.Status }
+// 		<button>
+// 			accept
+// 		</button>
+// 		<button>
+// 			unsure
+// 		</button>
+// 		<button>
+// 			decline
+// 		</button>
+// 	</div>
+// }

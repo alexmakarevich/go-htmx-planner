@@ -83,9 +83,13 @@ func main() {
 		server.POST("/htmx/createEvent", routes.CreateEventHandler(queries))
 
 		server.GET("/events", routes.ListEventsPageHandler(queries))
-		server.GET("/event/:id", routes.GetEventPageHandler(queries))
+		server.GET("/event/:id", routes.ViewOrUpdateEventPageHandler(queries, false))
+		server.GET("/event/:id/invite", routes.ViewOrUpdateEventPageHandler(queries, false))
 
-		server.GET("/updateEvent/:id", routes.UpdateEventPageHandler(queries))
+		server.GET("/myInvites", routes.ListInvitesPagehandler(queries))
+
+		server.GET("/updateEvent/:id", routes.ViewOrUpdateEventPageHandler(queries, true))
+
 		server.PUT("/htmx/updateEvent/:id", routes.UpdateEventHandler(queries))
 
 		server.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
@@ -97,7 +101,11 @@ func main() {
 
 		server.POST("/htmx/addParticipant/:eventId/:userId/:status", routes.AddParticipantHandler(queries))
 		server.PUT("/htmx/inviteParticipants/:eventId", routes.InviteParticipantsHandler(queries))
-		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))
+		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.Notification)))
+		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status/newState", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.NewStatusAndButttons)))
+
+		// server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))
+
 		server.DELETE("/htmx/removeParticipant/:eventId/:userId", routes.DeleteParticipantHandler(queries))
 
 	}

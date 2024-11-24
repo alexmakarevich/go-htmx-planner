@@ -354,6 +354,52 @@ func (q *Queries) ListCalendaEvents(ctx context.Context) ([]CalendarEvent, error
 	return items, nil
 }
 
+const listParticipationsByInviteeId = `-- name: ListParticipationsByInviteeId :many
+SELECT calendar_events.id, calendar_events.title, calendar_events.date_time, calendar_events.owner_id, participations.user_id, participations.event_id, participations.status FROM participations INNER JOIN calendar_events ON participations.event_id = calendar_events.id
+WHERE participations.user_id = ?
+`
+
+type ListParticipationsByInviteeIdRow struct {
+	ID       int64
+	Title    string
+	DateTime time.Time
+	OwnerID  int64
+	UserID   int64
+	EventID  int64
+	Status   string
+}
+
+func (q *Queries) ListParticipationsByInviteeId(ctx context.Context, userID int64) ([]ListParticipationsByInviteeIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, listParticipationsByInviteeId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListParticipationsByInviteeIdRow
+	for rows.Next() {
+		var i ListParticipationsByInviteeIdRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.DateTime,
+			&i.OwnerID,
+			&i.UserID,
+			&i.EventID,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSessions = `-- name: ListSessions :many
 SELECT id, user_id FROM sessions
 ORDER BY id

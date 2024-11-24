@@ -133,6 +133,10 @@ WHERE user_id = ? AND event_id = ?;
 SELECT users.* FROM participations INNER JOIN users ON participations.user_id = users.id
 WHERE participations.event_id = ? AND participations.status = ?;
 
+-- name: ListParticipationsByInviteeId :many
+SELECT calendar_events.*, participations.* FROM participations INNER JOIN calendar_events ON participations.event_id = calendar_events.id
+WHERE participations.user_id = ?;
+
 -- name: SearchUsersExcludingParticipants :many
 SELECT users.* FROM users LEFT JOIN 
 ( SELECT * FROM participations WHERE event_id = CAST(@event_id AS INTEGER)) parts

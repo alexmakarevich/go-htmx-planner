@@ -1,0 +1,23 @@
+package templs_event
+
+import (
+	"go-form/sqlc/db_entities"
+	"strconv"
+)
+
+templ ListInvites(invites *[]db_entities.ListParticipationsByInviteeIdRow) {
+	<ul>
+		for _, invite := range *invites {
+			<li id={ "event-" + strconv.FormatUint(uint64(invite.ID), 10) } style="list-style:none;display:flex;align-items: center;">
+				<span style="padding:0 1rem">{ invite.DateTime.Format("02 Jan 2006 - 03:04") }</span>
+				{ "    |    " }
+				<span style="padding:0 1rem">{ strconv.FormatUint(uint64(invite.ID), 10) }</span>
+				{ "    |    " }
+				<span style="padding:0 1rem">{ invite.Title }</span>
+				// TODO: don't do the same conv twice?
+				<a href={ templ.SafeURL("/event/"+strconv.FormatUint(uint64(invite.ID), 10)) + "/invite" }><button style="margin-left:1rem" class="secondary">view</button></a>
+				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(invite.ID), 10) } hx-delete={ "/htmx/deleteEvent/" + strconv.FormatUint(uint64(invite.ID), 10) }>delete</button>
+			</li>
+		}
+	</ul>
+}
