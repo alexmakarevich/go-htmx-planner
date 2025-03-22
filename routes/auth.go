@@ -28,9 +28,9 @@ func AuthMiddleware(q *db_entities.Queries) gin.HandlerFunc {
 		if err != nil {
 			fmt.Println("session cookie not found")
 			fmt.Println(err)
-			// c.Header("HX-Redirect", "/loginOrRegister")
+			// c.Header("HX-Redirect", "/v1/loginOrRegister")
 			// c.String(200, "")
-			c.Redirect(307, "/loginOrRegister")
+			c.Redirect(307, "loginOrRegister")
 			c.Abort()
 			return
 		}
@@ -45,8 +45,8 @@ func AuthMiddleware(q *db_entities.Queries) gin.HandlerFunc {
 		if err != nil {
 			fmt.Println("ERROR:")
 			fmt.Println(err.Error())
-			// c.Header("HX-Redirect", "/loginOrRegister")
-			c.Redirect(307, "/loginOrRegister")
+			// c.Header("HX-Redirect", "/v1/loginOrRegister")
+			c.Redirect(307, "loginOrRegister")
 			c.Abort()
 			return
 		}
@@ -77,7 +77,7 @@ func LogoutHandler(q *db_entities.Queries) func(c *gin.Context) {
 
 		c.SetCookie(CookieName, "", -1, "/", Domain, CookieSecure, CookieHTTPOnly)
 
-		c.Header("HX-Redirect", "/login")
+		c.Header("HX-Redirect", "/v1/login")
 		// TODO: figure the nicest way to combine redirect & notifications (special header?)
 		c.String(200, "")
 	}
@@ -120,7 +120,7 @@ func LoginHandler(q *db_entities.Queries) func(c *gin.Context) {
 		fmt.Println(sessionToken)
 
 		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
-		c.Header("HX-Redirect", "/")
+		c.Header("HX-Redirect", "/v1")
 		// c.String(200, "")
 		// c.Redirect(300, "/")
 		// TODO: figure the nicest way to combine redirect & notifications (special header?)
@@ -162,7 +162,7 @@ func RegisterHandler(q *db_entities.Queries) func(c *gin.Context) {
 		fmt.Println(sessionToken)
 
 		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
-		c.Header("HX-Redirect", "/")
+		c.Header("HX-Redirect", "/v1")
 		// c.String(200, "")
 		// c.Redirect(300, "/")
 		// TODO: figure the nicest way to combine redirect & notifications (special header?)

@@ -44,7 +44,6 @@ func main() {
 	queries := db_entities.New(db)
 
 	server := gin.Default()
-	server.Static("/public", "./public")
 
 	ginHtmlRenderer := server.HTMLRender
 	server.HTMLRender = &gintemplrenderer.HTMLTemplRenderer{FallbackHtmlRenderer: ginHtmlRenderer}
@@ -52,61 +51,63 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
-	server.POST("/htmx/register", routes.RegisterHandler(queries))
-	server.POST("/htmx/login", routes.LoginHandler(queries))
+	v1 := server.Group("/v1")
+	v1.Static("/public", "./public")
+	v1.POST("/htmx/register", routes.RegisterHandler(queries))
+	v1.POST("/htmx/login", routes.LoginHandler(queries))
 
-	server.GET("/register", routes.SimpleRender(templs_auth.RegisterPage()))
-	server.GET("/login", routes.SimpleRender(templs_auth.LoginPage()))
-	server.GET("/loginOrRegister", routes.SimpleRender(templs_auth.LoginOrRegister()))
+	v1.GET("/register", routes.SimpleRender(templs_auth.RegisterPage()))
+	v1.GET("/login", routes.SimpleRender(templs_auth.LoginPage()))
+	v1.GET("/loginOrRegister", routes.SimpleRender(templs_auth.LoginOrRegister()))
 
-	server.Use(routes.AuthMiddleware(queries))
+	v1.Use(routes.AuthMiddleware(queries))
 	{
-		server.GET("/", routes.RenderPage(templs.Home()))
+		v1.GET("/", routes.RenderPage(templs.Home()))
 
-		server.POST("/htmx/logout", routes.LogoutHandler(queries))
-		server.GET("/settings", routes.SettingsPageHandler(queries))
-		server.DELETE("/htmx/delete-self", routes.DeleteSelfHandler(queries))
+		v1.POST("/htmx/logout", routes.LogoutHandler(queries))
+		v1.GET("/settings", routes.SettingsPageHandler(queries))
+		v1.DELETE("/htmx/delete-self", routes.DeleteSelfHandler(queries))
 
 		// USER
-		server.GET("/createUser", routes.CreateUserPageHandler(queries))
-		server.POST("/htmx/createUser", routes.CreateUserHandler(queries))
+		v1.GET("/createUser", routes.CreateUserPageHandler(queries))
+		v1.POST("/htmx/createUser", routes.CreateUserHandler(queries))
 
-		server.GET("/users", routes.ListUsersPageHandler(queries))
+		v1.GET("/users", routes.ListUsersPageHandler(queries))
 
-		server.GET("/updateUser/:id", routes.UpdateUserPageHandler(queries))
-		server.PUT("/htmx/updateUser/:id", routes.UpdateUserHandler(queries))
+		v1.GET("/updateUser/:id", routes.UpdateUserPageHandler(queries))
+		v1.PUT("/htmx/updateUser/:id", routes.UpdateUserHandler(queries))
 
-		server.DELETE("/htmx/deleteUser/:id", routes.DeleteUserHandler(queries))
+		v1.DELETE("/htmx/deleteUser/:id", routes.DeleteUserHandler(queries))
 
 		// EVENT
-		server.GET("/createEvent", routes.CreateEventPageHandler(queries))
-		server.POST("/htmx/createEvent", routes.CreateEventHandler(queries))
+		v1.GET("/createEvent", routes.CreateEventPageHandler(queries))
+		v1.POST("/htmx/createEvent", routes.CreateEventHandler(queries))
 
-		server.GET("/events", routes.ListEventsPageHandler(queries))
-		server.GET("/event/:id", routes.ViewOrUpdateEventPageHandler(queries, false))
-		server.GET("/event/:id/invite", routes.ViewOrUpdateEventPageHandler(queries, false))
+		v1.GET("/events", routes.ListEventsPageHandler(queries))
+		v1.GET("/event/:id", routes.ViewOrUpdateEventPageHandler(queries, false))
+		v1.GET("/event/:id/invite", routes.ViewOrUpdateEventPageHandler(queries, false))
 
-		server.GET("/myInvites", routes.ListInvitesPagehandler(queries))
+		v1.GET("/myInvites", routes.ListInvitesPagehandler(queries))
 
-		server.GET("/updateEvent/:id", routes.ViewOrUpdateEventPageHandler(queries, true))
+		v1.GET("/updateEvent/:id", routes.ViewOrUpdateEventPageHandler(queries, true))
 
-		server.PUT("/htmx/updateEvent/:id", routes.UpdateEventHandler(queries))
+		v1.PUT("/htmx/updateEvent/:id", routes.UpdateEventHandler(queries))
 
-		server.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
+		v1.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
 
 		// PARTICIPATION
-		server.GET("/htmx/searchParticipants/:eventId", routes.SearchParticipantsHandler(queries))
-		server.POST("/htmx/selectParticipant/:eventId/:userId", routes.SelectParticipantHanlder(queries))
-		server.DELETE("/htmx/deselectParticipant/:eventId/:userId", routes.DeselectParticipantHanlder(queries))
+		v1.GET("/htmx/searchParticipants/:eventId", routes.SearchParticipantsHandler(queries))
+		v1.POST("/htmx/selectParticipant/:eventId/:userId", routes.SelectParticipantHanlder(queries))
+		v1.DELETE("/htmx/deselectParticipant/:eventId/:userId", routes.DeselectParticipantHanlder(queries))
 
-		server.POST("/htmx/addParticipant/:eventId/:userId/:status", routes.AddParticipantHandler(queries))
-		server.PUT("/htmx/inviteParticipants/:eventId", routes.InviteParticipantsHandler(queries))
-		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.Notification)))
-		server.PUT("/htmx/updateParticipant/:eventId/:userId/:status/newState", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.NewStatusAndButttons)))
+		v1.POST("/htmx/addParticipant/:eventId/:userId/:status", routes.AddParticipantHandler(queries))
+		v1.PUT("/htmx/inviteParticipants/:eventId", routes.InviteParticipantsHandler(queries))
+		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.Notification)))
+		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status/newState", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.NewStatusAndButttons)))
 
-		// server.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))
+		// v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))
 
-		server.DELETE("/htmx/removeParticipant/:eventId/:userId", routes.DeleteParticipantHandler(queries))
+		v1.DELETE("/htmx/removeParticipant/:eventId/:userId", routes.DeleteParticipantHandler(queries))
 
 	}
 

@@ -6,25 +6,25 @@ templ Page(content templ.Component) {
 		<header>
 			<menu class="main-menu">
 				<li>
-					<a href="/">home</a>
+					<a href="">home</a>
 				</li>
 				<li>
 					// TODO: restrict to admins
-					<a href="/events">events</a>
+					<a href="events">events</a>
 				</li>
 				<li>
-					<a href="/myInvites">my invites</a>
+					<a href="myInvites">my invites</a>
 				</li>
 				<li>
-					<a href="/users">users</a>
+					<a href="users">users</a>
 				</li>
 				<li>
-					<a href="/settings">settings</a>
+					<a href="settings">settings</a>
 				</li>
 				<li>
 					// TODO: cursor:pointer in a nicer way?
 					// TODO: "are you sure?""
-					<a hx-post="/htmx/logout" style="cursor:pointer">log out</a>
+					<a hx-post="htmx/logout" style="cursor:pointer">log out</a>
 				</li>
 			</menu>
 		</header>

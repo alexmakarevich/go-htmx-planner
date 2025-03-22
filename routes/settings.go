@@ -26,7 +26,7 @@ func DeleteSelfHandler(q *db_entities.Queries) func(c *gin.Context) {
 		}
 		c.SetCookie(CookieName, "", -1, "/", Domain, CookieSecure, CookieHTTPOnly)
 
-		c.Header("HX-Redirect", "/loginOrRegister")
+		c.Header("HX-Redirect", "/v1/loginOrRegister")
 		// c.Redirect(307, "/login")
 		// TODO: figure the nicest way to combine redirect & notifications (special header?)
 		c.String(200, "")

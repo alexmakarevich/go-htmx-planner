@@ -26,7 +26,7 @@ templ ViewOrUpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 	<main>
 		<section class="standard-box">
 			<form
-				hx-put={ "/htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
+				hx-put={ "htmx/updateEvent/" + strconv.FormatUint(uint64(event.ID), 10) }
 				hx-swap="none"
 				style="display: flex;
 					flex-direction: column;
@@ -78,7 +78,7 @@ templ ViewOrUpdateEvent(event *db_entities.GetCalendarEventWithOwnerRow,
 								type="search"
 								name="search"
 								placeholder="Search users to add..."
-								hx-get={ "/htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
+								hx-get={ "htmx/searchParticipants/" + strconv.FormatUint(uint64(event.ID), 10) }
 								hx-trigger="input changed delay:500ms, search, click"
 								hx-indicator=".htmx-indicator"
 								hx-swap="none"
@@ -140,7 +140,7 @@ templ SearchAndSelectUsers(eventId *int64,
 			margin-left: 1rem;
 			flex-shrink:0; 
 			align-self:baseline;"
-			hx-put={ "/htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10) }
+			hx-put={ "htmx/inviteParticipants/" + strconv.FormatUint(uint64(*eventId), 10) }
 		>invite users </button>
 	} else {
 		<button
@@ -169,7 +169,7 @@ templ SelectedList(eventId *int64, participants *[]db_entities.User, isEdit bool
 				if isEdit {
 					<button
 						class="delete select-delete"
-						hx-delete={ "/htmx/deselectParticipant/" +
+						hx-delete={ "htmx/deselectParticipant/" +
 			strconv.FormatUint(uint64(*eventId), 10) + "/" + strconv.FormatUint(uint64(user.ID), 10) }
 					>x </button>
 				}
@@ -193,7 +193,7 @@ templ SearchUserList(eventId *int64, participants *[]db_entities.User) {
 			<li class="select-li">
 				<div class="select-content" style="flex-grow: 1; opacity: 80%">{ user.UserName }</div>
 				<button
-					hx-post={ "/htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+					hx-post={ "htmx/selectParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
 			strconv.FormatUint(uint64(user.ID), 10) }
 				>select </button>
 			</li>
@@ -215,7 +215,7 @@ templ ParticipantList(eventId *int64, participants *[]db_entities.User, isEdit b
 				if isEdit {
 					<button
 						class="delete"
-						hx-delete={ "/htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
+						hx-delete={ "htmx/removeParticipant/" + strconv.FormatUint(uint64(*eventId), 10) + "/" +
 	strconv.FormatUint(uint64(user.ID), 10) }
 					>x</button>
 				}

@@ -55,7 +55,7 @@ func CreateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
-			c.Header("HX-Redirect", "/events")
+			c.Header("HX-Redirect", "/v1/events")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 	}
@@ -100,7 +100,7 @@ func UpdateEventHandler(q *db_entities.Queries) func(c *gin.Context) {
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
-			c.Header("HX-Redirect", "/events")
+			c.Header("HX-Redirect", "/v1/events")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 	}

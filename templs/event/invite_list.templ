@@ -15,8 +15,8 @@ templ ListInvites(invites *[]db_entities.ListParticipationsByInviteeIdRow) {
 				{ "    |    " }
 				<span style="padding:0 1rem">{ invite.Title }</span>
 				// TODO: don't do the same conv twice?
-				<a href={ templ.SafeURL("/event/"+strconv.FormatUint(uint64(invite.ID), 10)) + "/invite" }><button style="margin-left:1rem" class="secondary">view</button></a>
-				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(invite.ID), 10) } hx-delete={ "/htmx/deleteEvent/" + strconv.FormatUint(uint64(invite.ID), 10) }>delete</button>
+				<a href={ templ.URL("event/" + strconv.FormatUint(uint64(invite.ID), 10) + "/invite") }><button style="margin-left:1rem" class="secondary">view</button></a>
+				<button style="margin-left:1rem;" class="delete" hx-swap="outerHTML" hx-target={ "#event-" + strconv.FormatUint(uint64(invite.ID), 10) } hx-delete={ "htmx/deleteEvent/" + strconv.FormatUint(uint64(invite.ID), 10) }>delete</button>
 			</li>
 		}
 	</ul>

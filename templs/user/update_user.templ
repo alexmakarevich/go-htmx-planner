@@ -1,20 +1,19 @@
 package templs_user
 
 import (
-	"strconv"
 	"go-form/sqlc/db_entities"
+	"strconv"
 )
 
 // TODO: nicely handle conflicting username
 // TODO: generify w/ create, perhaps?
-
 templ UpdateUser(user *db_entities.User) {
 	<h2>
 		Update User
 	</h2>
 	<div>
 		<form
-			hx-put={ "/htmx/updateUser/" + strconv.FormatUint(uint64(user.ID), 10) }
+			hx-put={ "htmx/updateUser/" + strconv.FormatUint(uint64(user.ID), 10) }
 			hx-swap="none"
 		>
 			<input

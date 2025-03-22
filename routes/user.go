@@ -45,7 +45,7 @@ func UpdateUserHandler(q *db_entities.Queries) func(c *gin.Context) {
 			c.HTML(200, "", templs.NotificationOobWithText(templs.BadReq, err.Error()))
 		} else {
 			println("succ")
-			c.Header("HX-Redirect", "/users")
+			c.Header("HX-Redirect", "/v1/users")
 			c.HTML(http.StatusCreated, "", templs.NotificationOob(templs.Success))
 		}
 	}
@@ -104,7 +104,7 @@ func CreateUserHandler(q *db_entities.Queries) func(c *gin.Context) {
 			c.HTML(200, "", templs.Notification(templs.BadReq))
 		} else {
 			println("succ")
-			c.Header("HX-Redirect", "/users")
+			c.Header("HX-Redirect", "/v1/users")
 			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
 		}
 	}

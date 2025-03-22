@@ -1,14 +1,13 @@
 package templs_user
 
 // TODO: nicely handle conflicting username
-
 templ CreateUser() {
 	<h2>
 		Create User
 	</h2>
 	<div>
 		<form
-			hx-post="/htmx/createUser"
+			hx-post="htmx/createUser"
 			hx-target="#notification"
 		>
 			<input
