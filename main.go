@@ -51,6 +51,11 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
+	v2 := server.Group("/v2")
+
+	// v2.StaticFile("/", "./svelte/index.html")
+	v2.Static("/", "./svelte/dist")
+
 	v1 := server.Group("/v1")
 	v1.Static("/public", "./public")
 	v1.POST("/htmx/register", routes.RegisterHandler(queries))
