@@ -25,6 +25,7 @@ func ListUsersPageHandler(q *db_entities.Queries) func(c *gin.Context) {
 	}
 }
 
+// TODO: there's a bug with params here - the password is required, which breaks some requests
 func UpdateUserHandler(q *db_entities.Queries) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
