@@ -54,7 +54,7 @@ func main() {
 	v2 := server.Group("/v2")
 
 	// v2.StaticFile("/", "./svelte/index.html")
-	v2.Static("/", "./svelte/dist")
+	v2.Static("/", "./v2/svelte/dist")
 
 	v1 := server.Group("/v1")
 	v1.Static("/public", "./v1/public")

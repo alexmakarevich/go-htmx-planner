@@ -6,15 +6,15 @@ tmp_dir = "tmp"
 args_bin = []
 bin = "./tmp/main"
 # TODO: freeze v1 and exclude templ from build
-cmd = "templ generate && cd sqlc && sqlc generate && cd ../svelte && npm run build && cd .. && go build -o ./tmp/main ."
+cmd = "templ generate && cd sqlc && sqlc generate && cd ../v2/svelte && npm run build && cd ../.. && go build -o ./tmp/main ."
 delay = 1000
 exclude_dir = [
     "tmp",
     "vendor",
     "e2e-test",
     "sqlc/db_entities",
-    "svelte/dist",
-    "svelte/node_modules",
+    "v2/svelte/dist",
+    "v2/svelte/node_modules",
 ]
 exclude_file = []
 exclude_regex = ["_test.go", "_templ.go"]
