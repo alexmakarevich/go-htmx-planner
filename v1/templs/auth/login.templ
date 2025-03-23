@@ -1,15 +1,15 @@
 package templs_auth
 
-import templs "go-form/templs/generic"
+import templs "go-form/v1/templs/generic"
 
-templ RegisterPage() {
+templ LoginPage() {
 	@templs.EmptyPage() {
 		<h2>
-			Register
+			Log In
 		</h2>
 		<div>
 			<form
-				hx-post="htmx/register"
+				hx-post="htmx/login"
 				hx-target="#notification"
 			>
 				<input
@@ -28,13 +28,12 @@ templ RegisterPage() {
 					placeholder="password"
 					required
 					onkeyup="this.setCustomValidity('') // reset the validation on keyup"
-					hx-on:htmx:validation:validate="if(this.value.length < 10) {
-                    this.setCustomValidity('The password must be at least 10 chars long') // set the validation error
+					hx-on:htmx:validation:validate="if(this.value.length < 1) {
+                    this.setCustomValidity('The password may no be empty') // set the validation error
                     htmx.find('#example-form').reportValidity()          // report the issue
                 }"
 				/>
-				<div style="margin-bottom: 2rem"><i>Password must be at least 10 characters long</i></div>
-				<button type="submit">register</button>
+				<button type="submit">log in</button>
 			</form>
 		</div>
 	}

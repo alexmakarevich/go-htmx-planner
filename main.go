@@ -13,9 +13,9 @@ import (
 
 	db_entities "go-form/sqlc/db_entities"
 
-	"go-form/routes"
-	templs_auth "go-form/templs/auth"
-	templs "go-form/templs/generic"
+	routesV1 "go-form/v1/routes"
+	templs_auth "go-form/v1/templs/auth"
+	templs "go-form/v1/templs/generic"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -57,62 +57,62 @@ func main() {
 	v2.Static("/", "./svelte/dist")
 
 	v1 := server.Group("/v1")
-	v1.Static("/public", "./public")
-	v1.POST("/htmx/register", routes.RegisterHandler(queries))
-	v1.POST("/htmx/login", routes.LoginHandler(queries))
+	v1.Static("/public", "./v1/public")
+	v1.POST("/htmx/register", routesV1.RegisterHandler(queries))
+	v1.POST("/htmx/login", routesV1.LoginHandler(queries))
 
-	v1.GET("/register", routes.SimpleRender(templs_auth.RegisterPage()))
-	v1.GET("/login", routes.SimpleRender(templs_auth.LoginPage()))
-	v1.GET("/loginOrRegister", routes.SimpleRender(templs_auth.LoginOrRegister()))
+	v1.GET("/register", routesV1.SimpleRender(templs_auth.RegisterPage()))
+	v1.GET("/login", routesV1.SimpleRender(templs_auth.LoginPage()))
+	v1.GET("/loginOrRegister", routesV1.SimpleRender(templs_auth.LoginOrRegister()))
 
-	v1.Use(routes.AuthMiddleware(queries))
+	v1.Use(routesV1.AuthMiddleware(queries))
 	{
-		v1.GET("/", routes.RenderPage(templs.Home()))
+		v1.GET("/", routesV1.RenderPage(templs.Home()))
 
-		v1.POST("/htmx/logout", routes.LogoutHandler(queries))
-		v1.GET("/settings", routes.SettingsPageHandler(queries))
-		v1.DELETE("/htmx/delete-self", routes.DeleteSelfHandler(queries))
+		v1.POST("/htmx/logout", routesV1.LogoutHandler(queries))
+		v1.GET("/settings", routesV1.SettingsPageHandler(queries))
+		v1.DELETE("/htmx/delete-self", routesV1.DeleteSelfHandler(queries))
 
 		// USER
-		v1.GET("/createUser", routes.CreateUserPageHandler(queries))
-		v1.POST("/htmx/createUser", routes.CreateUserHandler(queries))
+		v1.GET("/createUser", routesV1.CreateUserPageHandler(queries))
+		v1.POST("/htmx/createUser", routesV1.CreateUserHandler(queries))
 
-		v1.GET("/users", routes.ListUsersPageHandler(queries))
+		v1.GET("/users", routesV1.ListUsersPageHandler(queries))
 
-		v1.GET("/updateUser/:id", routes.UpdateUserPageHandler(queries))
-		v1.PUT("/htmx/updateUser/:id", routes.UpdateUserHandler(queries))
+		v1.GET("/updateUser/:id", routesV1.UpdateUserPageHandler(queries))
+		v1.PUT("/htmx/updateUser/:id", routesV1.UpdateUserHandler(queries))
 
-		v1.DELETE("/htmx/deleteUser/:id", routes.DeleteUserHandler(queries))
+		v1.DELETE("/htmx/deleteUser/:id", routesV1.DeleteUserHandler(queries))
 
 		// EVENT
-		v1.GET("/createEvent", routes.CreateEventPageHandler(queries))
-		v1.POST("/htmx/createEvent", routes.CreateEventHandler(queries))
+		v1.GET("/createEvent", routesV1.CreateEventPageHandler(queries))
+		v1.POST("/htmx/createEvent", routesV1.CreateEventHandler(queries))
 
-		v1.GET("/events", routes.ListEventsPageHandler(queries))
-		v1.GET("/event/:id", routes.ViewOrUpdateEventPageHandler(queries, false))
-		v1.GET("/event/:id/invite", routes.ViewOrUpdateEventPageHandler(queries, false))
+		v1.GET("/events", routesV1.ListEventsPageHandler(queries))
+		v1.GET("/event/:id", routesV1.ViewOrUpdateEventPageHandler(queries, false))
+		v1.GET("/event/:id/invite", routesV1.ViewOrUpdateEventPageHandler(queries, false))
 
-		v1.GET("/myInvites", routes.ListInvitesPagehandler(queries))
+		v1.GET("/myInvites", routesV1.ListInvitesPagehandler(queries))
 
-		v1.GET("/updateEvent/:id", routes.ViewOrUpdateEventPageHandler(queries, true))
+		v1.GET("/updateEvent/:id", routesV1.ViewOrUpdateEventPageHandler(queries, true))
 
-		v1.PUT("/htmx/updateEvent/:id", routes.UpdateEventHandler(queries))
+		v1.PUT("/htmx/updateEvent/:id", routesV1.UpdateEventHandler(queries))
 
-		v1.DELETE("/htmx/deleteEvent/:id", routes.DeleteEventHandler(queries))
+		v1.DELETE("/htmx/deleteEvent/:id", routesV1.DeleteEventHandler(queries))
 
 		// PARTICIPATION
-		v1.GET("/htmx/searchParticipants/:eventId", routes.SearchParticipantsHandler(queries))
-		v1.POST("/htmx/selectParticipant/:eventId/:userId", routes.SelectParticipantHanlder(queries))
-		v1.DELETE("/htmx/deselectParticipant/:eventId/:userId", routes.DeselectParticipantHanlder(queries))
+		v1.GET("/htmx/searchParticipants/:eventId", routesV1.SearchParticipantsHandler(queries))
+		v1.POST("/htmx/selectParticipant/:eventId/:userId", routesV1.SelectParticipantHanlder(queries))
+		v1.DELETE("/htmx/deselectParticipant/:eventId/:userId", routesV1.DeselectParticipantHanlder(queries))
 
-		v1.POST("/htmx/addParticipant/:eventId/:userId/:status", routes.AddParticipantHandler(queries))
-		v1.PUT("/htmx/inviteParticipants/:eventId", routes.InviteParticipantsHandler(queries))
-		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.Notification)))
-		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status/newState", routes.UpdateParticipantHandler(queries, routes.UpdateParticipantResponse(routes.NewStatusAndButttons)))
+		v1.POST("/htmx/addParticipant/:eventId/:userId/:status", routesV1.AddParticipantHandler(queries))
+		v1.PUT("/htmx/inviteParticipants/:eventId", routesV1.InviteParticipantsHandler(queries))
+		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routesV1.UpdateParticipantHandler(queries, routesV1.UpdateParticipantResponse(routesV1.Notification)))
+		v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status/newState", routesV1.UpdateParticipantHandler(queries, routesV1.UpdateParticipantResponse(routesV1.NewStatusAndButttons)))
 
 		// v1.PUT("/htmx/updateParticipant/:eventId/:userId/:status", routes.UpdateParticipantHandler(queries))
 
-		v1.DELETE("/htmx/removeParticipant/:eventId/:userId", routes.DeleteParticipantHandler(queries))
+		v1.DELETE("/htmx/removeParticipant/:eventId/:userId", routesV1.DeleteParticipantHandler(queries))
 
 	}
 

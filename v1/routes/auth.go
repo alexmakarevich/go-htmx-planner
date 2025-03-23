@@ -3,7 +3,7 @@ package routes
 import (
 	"fmt"
 	"go-form/sqlc/db_entities"
-	templs "go-form/templs/generic"
+	templs "go-form/v1/templs/generic"
 	"net/http"
 	"time"
 

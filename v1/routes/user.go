@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-form/sqlc/db_entities"
-	templs "go-form/templs/generic"
-	templs_user "go-form/templs/user"
+	templs "go-form/v1/templs/generic"
+	templs_user "go-form/v1/templs/user"
 )
 
 func ListUsersPageHandler(q *db_entities.Queries) func(c *gin.Context) {

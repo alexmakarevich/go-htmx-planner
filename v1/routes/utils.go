@@ -7,7 +7,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
 
-	templs "go-form/templs/generic"
+	templs "go-form/v1/templs/generic"
 )
 
 func SimpleRender(tc templ.Component) func(c *gin.Context) {

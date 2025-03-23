@@ -3,7 +3,7 @@ package routes
 import (
 	"fmt"
 	"go-form/sqlc/db_entities"
-	templs_settings "go-form/templs/settings"
+	templs_settings "go-form/v1/templs/settings"
 
 	"github.com/gin-gonic/gin"
 )

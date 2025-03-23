@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-form/sqlc/db_entities"
-	templs_event "go-form/templs/event"
-	templs "go-form/templs/generic"
+	templs_event "go-form/v1/templs/event"
+	templs "go-form/v1/templs/generic"
 )
 
 func CreateEventPageHandler(q *db_entities.Queries) func(c *gin.Context) {
