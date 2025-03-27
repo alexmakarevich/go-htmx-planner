@@ -1,0 +1,2 @@
+protoc --proto_path=proto --go_out=proto-go --go_opt=paths=source_relative proto/*.proto;
+protoc  --plugin=./svelte/node_modules/.bin/protoc-gen-ts_proto --proto_path=proto --ts_proto_out=./svelte/proto-ts proto/*.proto;

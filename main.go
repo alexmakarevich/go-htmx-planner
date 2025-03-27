@@ -17,6 +17,8 @@ import (
 	templs_auth "go-form/v1/templs/auth"
 	templs "go-form/v1/templs/generic"
 
+	protos "go-form/v2/proto-go"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -24,6 +26,8 @@ import (
 var ddl string
 
 // TODO: timezones
+
+var car protos.Car
 
 func main() {
 	// TODO: FUTURE: prod.db, migrations, backups, etc.

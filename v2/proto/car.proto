@@ -1,0 +1,8 @@
+syntax = "proto3";
+option go_package = "proto.pkg";
+
+message Car {
+    string brand = 1;
+    string model = 2;
+    int64 id = 3;
+}
