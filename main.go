@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"net/http"
 
 	"github.com/a-h/templ/examples/integration-gin/gintemplrenderer"
 	"github.com/gin-gonic/gin"
@@ -54,6 +55,10 @@ func main() {
 
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
+
+	server.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusPermanentRedirect, "/v2")
+	})
 
 	v2 := server.Group("/v2")
 
