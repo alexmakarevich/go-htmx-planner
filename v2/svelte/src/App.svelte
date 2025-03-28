@@ -2,6 +2,7 @@
   import svelteLogo from "./assets/svelte.svg";
   import viteLogo from "/vite.svg";
   import Counter from "./lib/Counter.svelte";
+  import Form from "./Form.svelte";
 </script>
 
 <main>
@@ -15,13 +16,7 @@
   </div>
   <h1>Vite + Svelte</h1>
 
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>test</p>
-
-  <p class="read-the-docs">Click on the Vite and Svelte logos to learn more</p>
+  <Form />
 </main>
 
 <style>
@@ -36,8 +31,5 @@
   }
   .logo.svelte:hover {
     filter: drop-shadow(0 0 2em #ffe7b2);
-  }
-  .read-the-docs {
-    color: #888;
   }
 </style>

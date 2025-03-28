@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"io"
 	"net/http"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/a-h/templ/examples/integration-gin/gintemplrenderer"
 	"github.com/gin-gonic/gin"
@@ -27,8 +30,6 @@ import (
 var ddl string
 
 // TODO: timezones
-
-var car protos.Car
 
 func main() {
 	// TODO: FUTURE: prod.db, migrations, backups, etc.
@@ -63,7 +64,74 @@ func main() {
 	v2 := server.Group("/v2")
 
 	// v2.StaticFile("/", "./svelte/index.html")
-	v2.Static("/", "./v2/svelte/dist")
+
+	v2.StaticFile("/", "./v2/svelte/dist/index.html")
+	v2.Static("/assets", "./v2/svelte/dist/assets")
+	v2.StaticFile("/vite.svg", "./v2/svelte/dist/vite.svg")
+
+	var ListUsersHandler = func(q *db_entities.Queries) func(c *gin.Context) {
+		return func(c *gin.Context) {
+			users, err := q.ListUsers(c)
+			fmt.Println(users)
+			fmt.Println(len(users))
+
+			if err != nil {
+				fmt.Println(err.Error())
+				c.Status(500)
+				return
+			}
+			userList := &protos.UserList{Users: []*protos.ShareableUserData{}}
+
+			fmt.Println("USER LIST:")
+			fmt.Println(&userList)
+			fmt.Println(len(userList.Users))
+
+			for _, u := range users {
+				userList.Users = append(userList.Users, &protos.ShareableUserData{
+					Name: u.UserName,
+					Id:   int32(u.ID),
+				})
+			}
+
+			data, err := proto.Marshal(userList)
+			if err != nil {
+				fmt.Println("Error marshaling:", err)
+				c.AbortWithError(500, err)
+				return
+			}
+
+			c.Data(200, "application/x-protobuf", data)
+			// RenderPage(templs_user.UserList(&users))(c)
+		}
+	}
+
+	v2.GET("/list-users", ListUsersHandler(queries))
+
+	v2.POST("/create-user", func(c *gin.Context) {
+		println("create-user called")
+		newUser := protos.CreateUserParams{}
+		data, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.AbortWithError(500, err)
+		}
+		if err := proto.Unmarshal(data, &newUser); err != nil {
+			c.AbortWithError(500, err)
+		}
+		println(newUser.GetName())
+		println(newUser.GetPassword())
+
+		_, err = queries.CreateUser(c, db_entities.CreateUserParams{UserName: newUser.Name, Password: newUser.Password})
+
+		if err != nil {
+			println("bad db")
+			fmt.Println(err.Error())
+			c.HTML(200, "", templs.Notification(templs.BadReq))
+		} else {
+			println("succ")
+			c.Header("HX-Redirect", "/v1/users")
+			c.HTML(http.StatusCreated, "", templs.Notification(templs.Success))
+		}
+	})
 
 	v1 := server.Group("/v1")
 	v1.Static("/public", "./v1/public")

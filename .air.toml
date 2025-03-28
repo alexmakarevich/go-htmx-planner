@@ -16,6 +16,7 @@ exclude_dir = [
     "v2/svelte/dist",
     "v2/svelte/node_modules",
     "v2/svelte/proto-ts",
+    "v2/svelte/proto-es",
     "v2/proto-go",
 ]
 exclude_file = []
@@ -34,6 +35,7 @@ include_ext = [
     "ts",
     "css",
     "json",
+    "proto",
 ]
 include_file = []
 kill_delay = "0s"

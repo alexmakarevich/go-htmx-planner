@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "proto.pkg";
+
+message CreateUserParams {
+    string name = 1;
+    string password = 2;
+}
+
+// paswordless user
+message ShareableUserData {
+    int32 id = 1;
+    string name = 2;
+}
+
+message UserList {
+    repeated ShareableUserData users = 1;
+}
