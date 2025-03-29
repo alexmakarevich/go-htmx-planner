@@ -1,10 +1,10 @@
 <script lang="ts">
   import Home from "./Home.svelte";
   import Login from "./Login.svelte";
-  import { Router, Link, Route, navigate } from "svelte-routing";
+  import { Router, Link, Route, navigate, useHistory } from "svelte-routing";
   import NotFound from "./NotFound.svelte";
+  import LoggedInFrame from "./LoggedInFrame.svelte";
 
-  let url = $state("");
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("fe-route");
   if (redirect) {
@@ -13,18 +13,27 @@
 </script>
 
 <main>
-  <Router {url} basepath="/v2">
-    <nav>
-      <Link to="">home</Link>
-      <Link to="login">log in</Link>
-    </nav>
-    <div>
-      <Route path="/"><Home /></Route>
-      <Route path="login"><Login /></Route>
-      <Route>
-        <NotFound />
-      </Route>
-    </div>
+  <Router basepath="/v2/">
+    <Route path="login"><Login /></Route>
+
+    <Route path="/*">
+      <Router>
+        <Route path="/">
+          <!--  -->
+          <LoggedInFrame>
+            <Router>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Router>
+          </LoggedInFrame>
+          <!--  -->
+        </Route>
+        <Route>
+          <NotFound />
+        </Route>
+      </Router>
+    </Route>
   </Router>
 </main>
 
