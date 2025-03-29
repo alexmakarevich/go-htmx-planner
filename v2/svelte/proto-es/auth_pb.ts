@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth.proto.
  */
 export const file_auth: GenFile = /*@__PURE__*/
-  fileDesc("CgphdXRoLnByb3RvIi0KC0xvZ2luUGFyYW1zEgwKBG5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiHwoNTG9naW5SZXNwb25zZRIOCgZjb29raWUYASABKAlCC1oJcHJvdG8ucGtnYghlZGl0aW9uc3DoBw");
+  fileDesc("CgphdXRoLnByb3RvIi0KC0xvZ2luUGFyYW1zEgwKBG5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAlCC1oJcHJvdG8ucGtnYghlZGl0aW9uc3DoBw");
 
 /**
  * @generated from message LoginParams
@@ -33,21 +33,4 @@ export type LoginParams = Message<"LoginParams"> & {
  */
 export const LoginParamsSchema: GenMessage<LoginParams> = /*@__PURE__*/
   messageDesc(file_auth, 0);
-
-/**
- * @generated from message LoginResponse
- */
-export type LoginResponse = Message<"LoginResponse"> & {
-  /**
-   * @generated from field: string cookie = 1;
-   */
-  cookie: string;
-};
-
-/**
- * Describes the message LoginResponse.
- * Use `create(LoginResponseSchema)` to create a new message.
- */
-export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_auth, 1);
 
