@@ -60,15 +60,36 @@ func main() {
 
 		fmt.Printf("%+v\n", ctx.Request.URL)
 
-		if ctx.Request.URL.Path == "/v2/" ||
-			(len(ctx.Request.URL.Path) > 6 && ctx.Request.URL.Path[0:7] == "/v2/api") ||
+		if (len(ctx.Request.URL.Path) > 6 && ctx.Request.URL.Path[0:7] == "/v2/api") ||
 			(len(ctx.Request.URL.Path) > 9 && ctx.Request.URL.Path[0:10] == "/v2/assets") {
 			ctx.Next()
 			println("NO redirect:", ctx.Request.URL.Path)
 			return
 		}
 
+		if ctx.Request.URL.Path == "/v2/login" {
+			println("REDIRECT:", ctx.Request.URL.Path)
+			// // TODO: check query/body
+			ctx.Redirect(307, "/v2/?fe-route=/v2/login")
+			return
+		}
+
+		err := routesV2.CheckAuth(queries, ctx)
+
+		// TODO: query param to forward to given path after login
+		if err != nil && !(len(ctx.Request.URL.Path) > 9 && ctx.Request.URL.Path[0:9] == "/v2/login") {
+			fmt.Println("session cookie not found")
+			fmt.Println(err)
+			ctx.Redirect(307, "/v2/login")
+			ctx.Abort()
+			return
+		}
+
 		if len(ctx.Request.URL.Path) > 3 && ctx.Request.URL.Path[0:4] == "/v2/" {
+			if ctx.Request.URL.Path == "/v2/" {
+				ctx.Next()
+				return
+			}
 			println("REDIRECT:", ctx.Request.URL.Path)
 			// // TODO: check query/body
 			ctx.Redirect(307, "/v2/?fe-route="+ctx.Request.URL.Path)

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"go-form/sqlc/db_entities"
 	"io"
@@ -78,7 +79,24 @@ func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 
 	})
 
-	router.POST("/register", func(c *gin.Context) {
+	router.POST("/logout", func(c *gin.Context) {
+		session := c.MustGet("auth-context").(db_entities.GetSessionWithUserRow)
+
+		err := q.DeleteSession(c, session.SessionID)
+
+		c.SetCookie(CookieName, "", -1, "/", Domain, CookieSecure, CookieHTTPOnly)
+		if err != nil {
+			fmt.Println(err.Error())
+			c.String(500, "Could not delete session")
+			return
+		}
+
+		c.String(200, "")
+	})
+}
+
+func HandleLogout(q *db_entities.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		newUser := protos.CreateUserParams{}
 		data, err := io.ReadAll(c.Request.Body)
 		if err != nil {
@@ -109,22 +127,7 @@ func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 
 		c.SetCookie(CookieName, sessionToken, CookieMaxAge, "/", Domain, CookieSecure, CookieHTTPOnly)
 		c.Status(http.StatusOK)
-	})
-
-	router.POST("/logout", func(c *gin.Context) {
-		session := c.MustGet("auth-context").(db_entities.GetSessionWithUserRow)
-
-		err := q.DeleteSession(c, session.SessionID)
-
-		c.SetCookie(CookieName, "", -1, "/", Domain, CookieSecure, CookieHTTPOnly)
-		if err != nil {
-			fmt.Println(err.Error())
-			c.String(500, "Could not delete session")
-			return
-		}
-
-		c.String(200, "")
-	})
+	}
 }
 
 func AuthMiddleware(q *db_entities.Queries) gin.HandlerFunc {
@@ -157,6 +160,26 @@ func AuthMiddleware(q *db_entities.Queries) gin.HandlerFunc {
 		c.Set("auth-context", sessionWithUser)
 		c.Next()
 	}
+}
+
+func CheckAuth(q *db_entities.Queries, c *gin.Context) error {
+	sessionId, err := c.Cookie(CookieName)
+	if err != nil {
+		return errors.New("cookie not found in context")
+	}
+
+	fmt.Println("sessionId")
+	fmt.Println(sessionId)
+
+	sessionWithUser, err := q.GetSessionWithUser(c, sessionId)
+
+	if err != nil {
+		return errors.New("cookie/user not found in DB")
+	}
+
+	c.Set("auth-context", sessionWithUser)
+
+	return nil
 }
 
 func GetAuthContext(c *gin.Context) db_entities.GetSessionWithUserRow {
