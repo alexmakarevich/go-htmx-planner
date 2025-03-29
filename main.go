@@ -51,6 +51,10 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
+	server.GET("/", func(ctx *gin.Context) {
+		ctx.Redirect(301, "/v2")
+	})
+
 	// forwarding to correct FE-route of SPA
 	server.Use(func(ctx *gin.Context) {
 		if ctx.Request.Method != "GET" {
