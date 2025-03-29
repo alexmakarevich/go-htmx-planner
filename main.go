@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
-	"net/http"
 
 	"github.com/a-h/templ/examples/integration-gin/gintemplrenderer"
 	"github.com/gin-gonic/gin"
@@ -52,8 +51,32 @@ func main() {
 	// Disable trusted proxy warning.
 	server.SetTrustedProxies(nil)
 
-	server.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusPermanentRedirect, "/v2")
+	// forwarding to correct FE-route of SPA
+	server.Use(func(ctx *gin.Context) {
+		if ctx.Request.Method != "GET" {
+			ctx.Next()
+			return
+		}
+
+		fmt.Printf("%+v\n", ctx.Request.URL)
+
+		if ctx.Request.URL.Path == "/v2/" ||
+			(len(ctx.Request.URL.Path) > 6 && ctx.Request.URL.Path[0:7] == "/v2/api") ||
+			(len(ctx.Request.URL.Path) > 9 && ctx.Request.URL.Path[0:10] == "/v2/assets") {
+			ctx.Next()
+			println("NO redirect:", ctx.Request.URL.Path)
+			return
+		}
+
+		if len(ctx.Request.URL.Path) > 3 && ctx.Request.URL.Path[0:4] == "/v2/" {
+			println("REDIRECT:", ctx.Request.URL.Path)
+			// // TODO: check query/body
+			ctx.Redirect(307, "/v2/?redirect="+ctx.Request.URL.Path)
+			return
+		}
+
+		ctx.Next()
+		return
 	})
 
 	v2 := server.Group("/v2")
