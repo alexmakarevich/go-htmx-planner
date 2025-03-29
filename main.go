@@ -71,7 +71,7 @@ func main() {
 		if len(ctx.Request.URL.Path) > 3 && ctx.Request.URL.Path[0:4] == "/v2/" {
 			println("REDIRECT:", ctx.Request.URL.Path)
 			// // TODO: check query/body
-			ctx.Redirect(307, "/v2/?redirect="+ctx.Request.URL.Path)
+			ctx.Redirect(307, "/v2/?fe-route="+ctx.Request.URL.Path)
 			return
 		}
 

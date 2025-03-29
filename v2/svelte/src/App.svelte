@@ -5,8 +5,8 @@
   import NotFound from "./NotFound.svelte";
 
   let url = $state("");
-  let queryParams = new URLSearchParams(window.location.search);
-  let redirect = queryParams.get("redirect");
+  const queryParams = new URLSearchParams(window.location.search);
+  const redirect = queryParams.get("fe-route");
   if (redirect) {
     navigate(redirect, { replace: true });
   }
