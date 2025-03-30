@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LoginParamsSchema } from "../proto-es/auth_pb";
+  import { LoginParamsSchema } from "../../proto-es/auth_pb";
 
   import { create, toBinary } from "@bufbuild/protobuf";
 

@@ -6,9 +6,10 @@
 <header>
   <nav class="main-menu">
     <Link to="">home</Link>
+    <Link to="users">users</Link>
+
     <!-- <Link to="events">events</Link>
     <Link to="my-invites">my invites</Link>
-    <Link to="users">users</Link>
     <Link to="settings">settngs</Link> -->
 
     <Link to="login">log in</Link>
