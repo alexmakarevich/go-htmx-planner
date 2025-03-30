@@ -34,8 +34,7 @@
   background-color: dark-gray;
 }
 
-.main-menu>li {
-  list-style: none;
+.main-menu>* {
   padding: 1rem;
 }
 
@@ -117,4 +116,9 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: stretch;
+}
+
+footer {
+  text-align: center;
+  margin-top: 3rem;
 }

@@ -1,5 +1,4 @@
 import { mount } from 'svelte'
-import './app.css'
 import './style.css'
 import './pico.yellow.css'
 

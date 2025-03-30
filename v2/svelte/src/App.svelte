@@ -12,30 +12,28 @@
   }
 </script>
 
-<main>
-  <Router basepath="/v2/">
-    <Route path="login"><Login /></Route>
+<Router basepath="/v2/">
+  <Route path="login"><Login /></Route>
 
-    <Route path="/*">
-      <Router>
-        <Route path="/">
-          <!--  -->
-          <LoggedInFrame>
-            <Router>
-              <Route path="/">
-                <Home />
-              </Route>
-            </Router>
-          </LoggedInFrame>
-          <!--  -->
-        </Route>
-        <Route>
-          <NotFound />
-        </Route>
-      </Router>
-    </Route>
-  </Router>
-</main>
+  <Route path="/*">
+    <Router>
+      <Route path="/">
+        <!--  -->
+        <LoggedInFrame>
+          <Router>
+            <Route path="/">
+              <Home />
+            </Route>
+          </Router>
+        </LoggedInFrame>
+        <!--  -->
+      </Route>
+      <Route>
+        <NotFound />
+      </Route>
+    </Router>
+  </Route>
+</Router>
 
 <style>
 </style>
