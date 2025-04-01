@@ -7,6 +7,9 @@
   let password = $state("");
 </script>
 
+<!-- TODO: handle case where you're already logged in: -->
+<!-- "you're already logged in, log out? go back?" *fields disabled* -->
+
 <h2>log in</h2>
 
 <input type="text" bind:value={name} />
