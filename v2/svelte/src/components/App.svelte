@@ -5,6 +5,7 @@
   import Login from "./Login.svelte";
   import NotFound from "./NotFound.svelte";
   import Users from "./users/Users.svelte";
+  import Events from "./events/Events.svelte";
 
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("fe-route");
@@ -31,6 +32,9 @@
             </Route>
             <Route path="users">
               <Users />
+            </Route>
+            <Route path="events">
+              <Events />
             </Route>
           </Router>
         </LoggedInFrame>

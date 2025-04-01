@@ -12,6 +12,9 @@ WHERE calendar_events.id = ? LIMIT 1;
 SELECT * FROM calendar_events
 ORDER BY date_time;
 
+-- name: ListCalendarEventsWithOwner :many
+SELECT calendar_events.*, users.user_name as owner_name  FROM calendar_events INNER JOIN users ON calendar_events.owner_id = users.id;
+
 -- name: CreateCalendaEvent :one
 INSERT INTO calendar_events (
   title, date_time, owner_id

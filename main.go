@@ -77,7 +77,7 @@ func main() {
 	})
 
 	v2 := server.Group("/v2")
-	routesV2.MakeV2Routes(v2, queries)
+	routesV2.MakeV2Routes(v2, queries, db)
 
 	v1 := server.Group("/v1")
 	routesV1.MakeV1Routes(v1, queries)

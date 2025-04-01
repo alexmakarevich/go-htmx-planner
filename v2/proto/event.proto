@@ -1,0 +1,37 @@
+edition = "2023";
+
+option go_package = "proto.pkg";
+
+import "google/protobuf/timestamp.proto";
+
+message ListEventsWithOwnerResponse {
+    repeated EventAndOwner events = 1;
+}
+
+message EventAndOwner {
+    Event event = 1;
+    Owner owner = 2;
+}
+
+message Event {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp date_time = 3;
+}
+message Owner {
+    int64 id = 1;
+    string name = 2;
+}
+
+message CreateEventParams {
+    string title = 1;
+    google.protobuf.Timestamp date_time = 2;
+    repeated int64 invitedUserIds = 3;
+}
+
+message CreateEventResponse {
+    oneof id_or_error {
+        int64 id = 1;
+        string error_message = 2;
+    }
+}
