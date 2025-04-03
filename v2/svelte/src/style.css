@@ -122,3 +122,10 @@ footer {
   text-align: center;
   margin-top: 3rem;
 }
+
+.date-time-field {
+  margin: 0 0 var(--pico-spacing);
+  input {
+    background: var(--pico-form-element-background-color);
+  }
+}

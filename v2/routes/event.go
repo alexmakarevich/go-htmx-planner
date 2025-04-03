@@ -15,7 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB) {
+func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB, globalCtx context.Context) {
 	router.GET("/list-events", func(c *gin.Context) {
 		events, err := q.ListCalendarEventsWithOwner(c)
 		fmt.Println(events)
@@ -46,39 +46,44 @@ func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB) {
 
 	router.POST("/create-event", func(c *gin.Context) {
 		response := &protos.CreateEventResponse{}
-
 		// TODO: use response for errors too
 		newEvent := protos.CreateEventParams{}
 		if err := utils.ParseProto(c, &newEvent); err != nil {
-			c.AbortWithError(500, err)
+			response.IdOrError = &protos.CreateEventResponse_ErrorMessage{ErrorMessage: err.Error()}
+			utils.SendProto(c, 400, response)
 			return
 		}
 
-		newId, err := CreateEvent(db, q, c, *newEvent.Title, newEvent.DateTime.AsTime(), newEvent.InvitedUserIds)
+		newId, err := CreateEvent(db, q, globalCtx, *c, *newEvent.Title, newEvent.DateTime.AsTime(), newEvent.InvitedUserIds)
 		if err != nil {
-			c.AbortWithError(500, err)
+			response.IdOrError = &protos.CreateEventResponse_ErrorMessage{ErrorMessage: err.Error()}
+			utils.SendProto(c, 500, response)
 			return
 		}
 
 		response.IdOrError = &protos.CreateEventResponse_Id{Id: newId}
+		utils.SendProto(c, 200, response)
+		return
 	})
 }
 
-func CreateEvent(db *sql.DB, q *db_entities.Queries, c context.Context, title string, dateTime time.Time, participantIds []int64) (int64, error) {
+func CreateEvent(db *sql.DB, q *db_entities.Queries, globalCtx context.Context, reqCtx gin.Context, title string, dateTime time.Time, participantIds []int64) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, err
 	}
 	defer tx.Rollback()
 	qtx := q.WithTx(tx)
-	res, err := qtx.CreateCalendaEvent(c, db_entities.CreateCalendaEventParams{Title: title, DateTime: dateTime})
+	session := reqCtx.MustGet("auth-context").(db_entities.GetSessionWithUserRow)
+
+	res, err := qtx.CreateCalendaEvent(globalCtx, db_entities.CreateCalendaEventParams{Title: title, DateTime: dateTime, OwnerID: session.UserID})
 	if err != nil {
 		return 0, err
 	}
 
 	for _, pId := range participantIds {
 		// TODO: obviously better as a bulk op, but SQLC doesn't support them :(
-		_, err := qtx.AddParticipant(c, db_entities.AddParticipantParams{EventID: res.ID, UserID: pId})
+		_, err := qtx.AddParticipant(globalCtx, db_entities.AddParticipantParams{EventID: res.ID, UserID: pId})
 		if err != nil {
 			return 0, err
 		}

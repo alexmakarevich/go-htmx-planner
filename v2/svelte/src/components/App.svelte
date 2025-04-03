@@ -1,11 +1,12 @@
 <script lang="ts">
   import Home from "./Home.svelte";
-  import { Router, Link, Route, navigate, useHistory } from "svelte-routing";
+  import { Router, Route, navigate } from "svelte-routing";
   import LoggedInFrame from "./LoggedInFrame.svelte";
   import Login from "./Login.svelte";
   import NotFound from "./NotFound.svelte";
   import Users from "./users/Users.svelte";
   import Events from "./events/Events.svelte";
+  import CreateEvent from "./events/CreateEvent.svelte";
 
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("fe-route");
@@ -35,6 +36,9 @@
             </Route>
             <Route path="events">
               <Events />
+            </Route>
+            <Route path="create-event">
+              <CreateEvent />
             </Route>
           </Router>
         </LoggedInFrame>

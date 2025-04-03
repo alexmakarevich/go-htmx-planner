@@ -1,8 +1,10 @@
 <script lang="ts">
   import { listEvents } from "../../api/events";
+  import { navigate } from "svelte-routing";
 </script>
 
 <h2>Events</h2>
+<button onclick={() => navigate("/v2/create-event")}>create new</button>
 {#await listEvents()}
   <p>loading events...</p>
 {:then events}
@@ -15,7 +17,7 @@
           - {event.event.dateTime
             ? new Date(
                 Number(event.event.dateTime.seconds * 1000n)
-              ).toISOString()
+              ).toLocaleString()
             : ""}
           | onwer: {event.owner.name}
         </li>
