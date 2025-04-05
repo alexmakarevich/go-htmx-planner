@@ -7,6 +7,7 @@
   import Users from "./users/Users.svelte";
   import Events from "./events/Events.svelte";
   import CreateEvent from "./events/CreateEvent.svelte";
+  import NotificationWrapper from "./global/NotificationWrapper.svelte";
 
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("fe-route");
@@ -15,6 +16,7 @@
   }
 </script>
 
+<NotificationWrapper />
 <Router basepath="/v2/">
   <!-- FYI: this router mess is due to the way svelte-routing handles fallbacks and generic routes w/ conditional HTML elements -->
   <Route path="login"><Login /></Route>

@@ -32,7 +32,7 @@ export const createEvent = async ({
     dateTime: timestampFromDate(dateTime),
   });
   const body = toBinary(CreateEventParamsSchema, createEvent);
-  await fetch("http://localhost:19999/v2/api/create-event", {
+  return await fetch("http://localhost:19999/v2/api/create-event", {
     method: "post",
     body,
   });

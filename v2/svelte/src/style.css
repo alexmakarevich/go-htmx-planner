@@ -1,5 +1,6 @@
 :root {
   box-sizing: border-box;
+  --pico-del-color: red
 }
 
 .red {
@@ -8,6 +9,18 @@
 
 .green {
   background-color: green;
+}
+
+.failure {
+  background-color: rgb(112, 35, 35);
+}
+
+.success {
+  background-color: rgb(47, 128, 58);
+}
+
+.info {
+  background-color: rgb(61, 76, 90);
 }
 
 .auto-hide {
@@ -129,3 +142,4 @@ footer {
     background: var(--pico-form-element-background-color);
   }
 }
+
