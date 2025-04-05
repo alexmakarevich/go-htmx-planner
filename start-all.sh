@@ -1,0 +1,1 @@
+air & (cd v2/svelte && npm run build-and-watch)
