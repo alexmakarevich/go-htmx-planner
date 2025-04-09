@@ -73,6 +73,50 @@ func (x *LoginParams) GetPassword() string {
 	return ""
 }
 
+type LoginErrorResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       *string                `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginErrorResponse) Reset() {
+	*x = LoginErrorResponse{}
+	mi := &file_auth_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginErrorResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginErrorResponse) ProtoMessage() {}
+
+func (x *LoginErrorResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginErrorResponse.ProtoReflect.Descriptor instead.
+func (*LoginErrorResponse) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *LoginErrorResponse) GetMessage() string {
+	if x != nil && x.Message != nil {
+		return *x.Message
+	}
+	return ""
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -81,7 +125,9 @@ const file_auth_proto_rawDesc = "" +
 	"auth.proto\"=\n" +
 	"\vLoginParams\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpasswordB\vZ\tproto.pkgb\beditionsp\xe8\a"
+	"\bpassword\x18\x02 \x01(\tR\bpassword\".\n" +
+	"\x12LoginErrorResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessageB\vZ\tproto.pkgb\beditionsp\xe8\a"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -95,9 +141,10 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_auth_proto_goTypes = []any{
-	(*LoginParams)(nil), // 0: LoginParams
+	(*LoginParams)(nil),        // 0: LoginParams
+	(*LoginErrorResponse)(nil), // 1: LoginErrorResponse
 }
 var file_auth_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -118,7 +165,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

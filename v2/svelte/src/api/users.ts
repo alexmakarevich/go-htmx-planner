@@ -1,5 +1,7 @@
 import { create, toBinary, fromBinary } from "@bufbuild/protobuf";
 import { CreateUserParamsSchema, UserListSchema } from "../../proto-es/user_pb";
+import { apiReqRes } from "./api-req";
+import { ErrorResponseSchema } from "../../proto-es/generic_pb";
 
 export const listUsers = async () => {
   const response = await fetch("http://localhost:19999/v2/api/list-users", {
@@ -16,10 +18,32 @@ export const createUser = async ({
   name: string;
   password: string;
 }) => {
-  const createUser = create(CreateUserParamsSchema, { name, password });
+  const createUser = create(CreateUserParamsSchema, {
+    name,
+    password,
+  });
   const body = toBinary(CreateUserParamsSchema, createUser);
   await fetch("http://localhost:19999/v2/create-user", {
     method: "post",
     body,
   });
 };
+
+const createUserGenerated = async ({
+  name,
+  password,
+}: {
+  name: string;
+  password: string;
+}) =>
+  apiReqRes(
+    {
+      path: "/create-user",
+      method: "post",
+    },
+    {
+      input: { name, password },
+      inputSchema: CreateUserParamsSchema,
+      outputErrorSchema: ErrorResponseSchema,
+    },
+  );

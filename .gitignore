@@ -3,3 +3,4 @@ db
 tmp
 node_modules
 *_templ.go
+sandbox

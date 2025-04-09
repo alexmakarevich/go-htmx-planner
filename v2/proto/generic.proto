@@ -1,0 +1,7 @@
+edition = "2023";
+
+option go_package = "proto.pkg";
+
+message ErrorResponse {
+    string message = 1;
+}

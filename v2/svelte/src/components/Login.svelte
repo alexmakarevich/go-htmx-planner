@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { LoginParamsSchema } from "../../proto-es/auth_pb";
-
-  import { create, toBinary } from "@bufbuild/protobuf";
+  import { logIn } from "../api/auth";
+  import { navigate } from "svelte-routing";
+  import { globalToaster } from "./global/toaster.svelte";
 
   let name = $state("");
   let password = $state("");
@@ -17,11 +17,14 @@
 
 <button
   onclick={async () => {
-    const loginParams = create(LoginParamsSchema, { name, password });
-    const body = toBinary(LoginParamsSchema, loginParams);
-    await fetch("http://localhost:19999/v2/api/login", {
-      method: "post",
-      body,
-    });
+    const { isSuccess, error, badResponse } = await logIn({ name, password });
+    if (isSuccess) {
+      // TODO: allow navigating to previously attempted pages via query params
+      navigate("/v2/");
+    } else if (badResponse) {
+      globalToaster.add({ type: "failure", message: badResponse.message });
+    } else {
+      globalToaster.add({ type: "failure", message: error.message });
+    }
   }}>log in</button
 >

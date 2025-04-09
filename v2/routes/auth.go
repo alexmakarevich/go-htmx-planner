@@ -51,15 +51,16 @@ func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 		)
 
 		if err != nil {
-			c.String(500, "Couldn't parse params")
+			msg := "Couldn't parse params"
+			utils.SendProto(c, 500, &protos.ErrorResponse{Message: &msg})
 			return
 		}
 
 		user, err := q.FindUser(c, db_entities.FindUserParams{Password: *loginParams.Password, UserName: *loginParams.Name})
 
 		if err != nil {
-			println("couldn't find")
-			c.Status(401)
+			msg := "User doesn't exist"
+			utils.SendProto(c, 401, &protos.ErrorResponse{Message: &msg})
 			return
 		}
 
@@ -67,7 +68,8 @@ func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 
 		if _, err := q.CreateSession(c, db_entities.CreateSessionParams{ID: sessionToken, UserID: user.ID}); err != nil {
 			fmt.Println(err.Error())
-			c.String(500, "Could not create session")
+			msg := "Couldn't create session"
+			utils.SendProto(c, 500, &protos.ErrorResponse{Message: &msg})
 			return
 		}
 
