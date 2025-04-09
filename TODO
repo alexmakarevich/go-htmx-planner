@@ -3,7 +3,7 @@
     [] users
     [] auth
     [] invites
-[] fix typos in CreateCalendaEvent and similar queries
+[] fix typos in "CreateCalendaEvent" and similar queries
 [] consider SQLX (especially regarding bulk inserts/updates)
 [] complete invite lifecycle
 [] nicer router error handling via extended errors and global handler
@@ -12,4 +12,5 @@
 [] per-action access control (each api call gets an action, the less duplication in the FE, the better)
 [] bring back e2e tests
 [] styling
+[] consider full gRPC with a proxy/adapter for the browser 
 [x] URGENT - fix expired cookie breaking redirects
