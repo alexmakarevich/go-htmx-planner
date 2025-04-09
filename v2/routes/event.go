@@ -54,7 +54,7 @@ func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB, glo
 			return
 		}
 
-		newId, err := CreateEvent(db, q, globalCtx, *c, *newEvent.Title, newEvent.DateTime.AsTime(), newEvent.InvitedUserIds)
+		newId, err := CreateEvent(db, q, globalCtx, c, *newEvent.Title, newEvent.DateTime.AsTime(), newEvent.InvitedUserIds)
 		if err != nil {
 			response.IdOrError = &protos.CreateEventResponse_ErrorMessage{ErrorMessage: err.Error()}
 			utils.SendProto(c, 500, response)
@@ -67,7 +67,7 @@ func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB, glo
 	})
 }
 
-func CreateEvent(db *sql.DB, q *db_entities.Queries, globalCtx context.Context, reqCtx gin.Context, title string, dateTime time.Time, participantIds []int64) (int64, error) {
+func CreateEvent(db *sql.DB, q *db_entities.Queries, globalCtx context.Context, reqCtx *gin.Context, title string, dateTime time.Time, participantIds []int64) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, err
