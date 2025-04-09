@@ -20,3 +20,9 @@ export const logIn = async ({
       outputErrorSchema: ErrorResponseSchema,
     },
   );
+
+export const logOut = async () =>
+  apiReqRes({
+    path: "/logout",
+    method: "post",
+  });

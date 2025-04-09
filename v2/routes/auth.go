@@ -18,32 +18,15 @@ import (
 )
 
 // TODO: check what else makes sense as const
-// FYI: some of them are "ocnst" just for prettiness
+// FYI: some of them are "const" just for prettiness
 const Domain string = "localhost"
-const CookieName string = "gohtmxplanner_cookie"
+const CookieName string = "go-planner_cookie"
 const CookieMaxAge = int(time.Minute * 10)
 const CookieSecure = true
 const CookieHTTPOnly = true
 
 func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 	router.POST("/login", func(c *gin.Context) {
-		// loginParams, err := utils.ParseProto[*protos.LoginParams](
-		// 	c,
-		// )
-
-		// loginParams := protos.LoginParams{}
-
-		// data, err := io.ReadAll(c.Request.Body)
-		// if err != nil {
-		// 	println("i can't reeeeeeaaad")
-		// 	c.Status(401)
-		// 	return
-		// }
-		// if err := proto.Unmarshal(data, &loginParams); err != nil {
-		// 	println("couldn't unmarhal")
-		// 	c.Status(401)
-		// 	return
-		// }
 
 		loginParams := protos.LoginParams{}
 		err := utils.ParseProto(
@@ -93,7 +76,7 @@ func MakeAuthRoutes(router gin.IRouter, q *db_entities.Queries) {
 			return
 		}
 
-		c.String(200, "")
+		c.Status(http.StatusOK)
 	})
 }
 

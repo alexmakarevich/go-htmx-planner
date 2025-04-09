@@ -146,13 +146,29 @@ export function apiReqRes<
       result?: undefined;
     }
 >;
+
+export function apiReqRes(
+  reqInfo: Omit<RequestInit, "body"> & { path: string }, // TODO: what else to omit?
+  customParams?: {},
+): Promise<
+  | {
+      isSuccess: true;
+      result: undefined;
+      error?: undefined;
+    }
+  | {
+      isSuccess: false;
+      error: Error;
+      result?: undefined;
+    }
+>;
 export async function apiReqRes<
   InputShape extends Message,
   OutputShape extends Message,
   OutputErrorShape extends Message,
 >(
   reqInfo: Omit<RequestInit, "body"> & { path: string }, // TODO: what else to omit?
-  customParams: {
+  customParams?: {
     inputSchema?: GenMessage<InputShape>;
     input?: MessageInitShape<GenMessage<InputShape>>;
     outputSchema?: GenMessage<OutputShape> | undefined;
@@ -160,14 +176,15 @@ export async function apiReqRes<
   },
 ) {
   try {
-    const { input, inputSchema, outputSchema, outputErrorSchema } =
-      customParams;
-
     let body: Uint8Array | undefined;
+    if (customParams) {
+      const { input, inputSchema, outputSchema, outputErrorSchema } =
+        customParams;
 
-    if (input && inputSchema) {
-      const message = create(inputSchema, input);
-      body = toBinary(inputSchema, message);
+      if (input && inputSchema) {
+        const message = create(inputSchema, input);
+        body = toBinary(inputSchema, message);
+      }
     }
 
     const res = await fetch(BASE_URL + reqInfo.path, {
@@ -176,8 +193,11 @@ export async function apiReqRes<
     });
 
     if (res.ok) {
-      if (outputSchema) {
-        const parsedBody = fromBinary(outputSchema, await res.bytes());
+      if (customParams?.outputSchema) {
+        const parsedBody = fromBinary(
+          customParams.outputSchema,
+          await res.bytes(),
+        );
         // @ts-ignore
         // https://github.com/microsoft/TypeScript/issues/33912
         // https://github.com/microsoft/TypeScript/pull/61136
@@ -186,8 +206,11 @@ export async function apiReqRes<
       return { isSuccess: true, result: undefined };
     }
 
-    if (outputErrorSchema) {
-      const parsedBody = fromBinary(outputErrorSchema, await res.bytes());
+    if (customParams?.outputErrorSchema) {
+      const parsedBody = fromBinary(
+        customParams.outputErrorSchema,
+        await res.bytes(),
+      );
       // @ts-ignore
       // https://github.com/microsoft/TypeScript/issues/33912
       // https://github.com/microsoft/TypeScript/pull/61136
