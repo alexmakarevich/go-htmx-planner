@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Router, Link, Route, navigate } from "svelte-routing";
+  import { Link } from "svelte-routing";
   import { logOut } from "../api/auth";
   import { globalToaster } from "./global/toaster.svelte";
   let { children } = $props();
@@ -26,7 +26,7 @@
     >
   </nav>
 </header>
-<article>
+<main class="container">
   {@render children?.()}
-</article>
+</main>
 <footer>some footer stuff © 2077</footer>
