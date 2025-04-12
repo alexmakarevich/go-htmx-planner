@@ -1,9 +1,12 @@
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 import {
   CreateEventParamsSchema,
+  DeleteEventParamsSchema,
   ListEventsWithOwnerResponseSchema,
 } from "../../proto-es/event_pb";
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
+import { apiReqRes } from "./api-req";
+import { ErrorResponseSchema } from "../../proto-es/generic_pb";
 
 export const listEvents = async () => {
   // TODO: base-url
@@ -37,3 +40,16 @@ export const createEvent = async ({
     body,
   });
 };
+
+export const deleteEvent = async (id: bigint) =>
+  apiReqRes(
+    {
+      path: "/delete-event",
+      method: "delete",
+    },
+    {
+      input: { id },
+      inputSchema: DeleteEventParamsSchema,
+      outputErrorSchema: ErrorResponseSchema,
+    },
+  );

@@ -290,6 +290,50 @@ func (x *CreateEventParams) GetInvitedUserIds() []int64 {
 	return nil
 }
 
+type DeleteEventParams struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            *int64                 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEventParams) Reset() {
+	*x = DeleteEventParams{}
+	mi := &file_event_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEventParams) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEventParams) ProtoMessage() {}
+
+func (x *DeleteEventParams) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEventParams.ProtoReflect.Descriptor instead.
+func (*DeleteEventParams) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DeleteEventParams) GetId() int64 {
+	if x != nil && x.Id != nil {
+		return *x.Id
+	}
+	return 0
+}
+
 type CreateEventResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to IdOrError:
@@ -303,7 +347,7 @@ type CreateEventResponse struct {
 
 func (x *CreateEventResponse) Reset() {
 	*x = CreateEventResponse{}
-	mi := &file_event_proto_msgTypes[5]
+	mi := &file_event_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -315,7 +359,7 @@ func (x *CreateEventResponse) String() string {
 func (*CreateEventResponse) ProtoMessage() {}
 
 func (x *CreateEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[5]
+	mi := &file_event_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -328,7 +372,7 @@ func (x *CreateEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEventResponse.ProtoReflect.Descriptor instead.
 func (*CreateEventResponse) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{5}
+	return file_event_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateEventResponse) GetIdOrError() isCreateEventResponse_IdOrError {
@@ -392,7 +436,9 @@ const file_event_proto_rawDesc = "" +
 	"\x11CreateEventParams\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x127\n" +
 	"\tdate_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bdateTime\x12&\n" +
-	"\x0einvitedUserIds\x18\x03 \x03(\x03R\x0einvitedUserIds\"]\n" +
+	"\x0einvitedUserIds\x18\x03 \x03(\x03R\x0einvitedUserIds\"#\n" +
+	"\x11DeleteEventParams\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"]\n" +
 	"\x13CreateEventResponse\x12\x10\n" +
 	"\x02id\x18\x01 \x01(\x03H\x00R\x02id\x12%\n" +
 	"\rerror_message\x18\x02 \x01(\tH\x00R\ferrorMessageB\r\n" +
@@ -410,22 +456,23 @@ func file_event_proto_rawDescGZIP() []byte {
 	return file_event_proto_rawDescData
 }
 
-var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_event_proto_goTypes = []any{
 	(*ListEventsWithOwnerResponse)(nil), // 0: ListEventsWithOwnerResponse
 	(*EventAndOwner)(nil),               // 1: EventAndOwner
 	(*Event)(nil),                       // 2: Event
 	(*Owner)(nil),                       // 3: Owner
 	(*CreateEventParams)(nil),           // 4: CreateEventParams
-	(*CreateEventResponse)(nil),         // 5: CreateEventResponse
-	(*timestamppb.Timestamp)(nil),       // 6: google.protobuf.Timestamp
+	(*DeleteEventParams)(nil),           // 5: DeleteEventParams
+	(*CreateEventResponse)(nil),         // 6: CreateEventResponse
+	(*timestamppb.Timestamp)(nil),       // 7: google.protobuf.Timestamp
 }
 var file_event_proto_depIdxs = []int32{
 	1, // 0: ListEventsWithOwnerResponse.events:type_name -> EventAndOwner
 	2, // 1: EventAndOwner.event:type_name -> Event
 	3, // 2: EventAndOwner.owner:type_name -> Owner
-	6, // 3: Event.date_time:type_name -> google.protobuf.Timestamp
-	6, // 4: CreateEventParams.date_time:type_name -> google.protobuf.Timestamp
+	7, // 3: Event.date_time:type_name -> google.protobuf.Timestamp
+	7, // 4: CreateEventParams.date_time:type_name -> google.protobuf.Timestamp
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -438,7 +485,7 @@ func file_event_proto_init() {
 	if File_event_proto != nil {
 		return
 	}
-	file_event_proto_msgTypes[5].OneofWrappers = []any{
+	file_event_proto_msgTypes[6].OneofWrappers = []any{
 		(*CreateEventResponse_Id)(nil),
 		(*CreateEventResponse_ErrorMessage)(nil),
 	}
@@ -448,7 +495,7 @@ func file_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_event_proto_rawDesc), len(file_event_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

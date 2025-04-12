@@ -65,6 +65,22 @@ func MakeEventRoutes(router gin.IRouter, q *db_entities.Queries, db *sql.DB, glo
 		utils.SendProto(c, 200, response)
 		return
 	})
+
+	router.DELETE("/delete-event", func(c *gin.Context) {
+
+		eventToDelete := protos.DeleteEventParams{}
+		if err := utils.ParseProto(c, &eventToDelete); err != nil {
+			utils.SendErrorProto(c, 400, "parsing failed")
+			return
+		}
+
+		if err := q.DeleteCalendaEvent(c, *eventToDelete.Id); err != nil {
+			utils.SendErrorProto(c, 500, "deletion failed")
+			return
+		}
+
+		c.Status(204)
+	})
 }
 
 func CreateEvent(db *sql.DB, q *db_entities.Queries, globalCtx context.Context, reqCtx *gin.Context, title string, dateTime time.Time, participantIds []int64) (int64, error) {

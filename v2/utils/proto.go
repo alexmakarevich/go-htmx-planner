@@ -3,6 +3,8 @@ package utils
 import (
 	"io"
 
+	protos "go-form/v2/proto-go"
+
 	"google.golang.org/protobuf/proto"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +23,16 @@ func ParseProto(c *gin.Context, varPtr proto.Message) error {
 
 func SendProto(c *gin.Context, statusCode int, varPtr proto.Message) error {
 	data, err := proto.Marshal(varPtr)
+	if err != nil {
+		return err
+	}
+	c.Data(statusCode, "application/x-protobuf", data)
+	return nil
+}
+
+func SendErrorProto(c *gin.Context, statusCode int, message string) error {
+	errResp := &protos.ErrorResponse{Message: &message}
+	data, err := proto.Marshal(errResp)
 	if err != nil {
 		return err
 	}

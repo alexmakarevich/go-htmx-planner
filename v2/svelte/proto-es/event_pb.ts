@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file event.proto.
  */
 export const file_event: GenFile = /*@__PURE__*/
-  fileDesc("CgtldmVudC5wcm90byI9ChtMaXN0RXZlbnRzV2l0aE93bmVyUmVzcG9uc2USHgoGZXZlbnRzGAEgAygLMg4uRXZlbnRBbmRPd25lciI9Cg1FdmVudEFuZE93bmVyEhUKBWV2ZW50GAEgASgLMgYuRXZlbnQSFQoFb3duZXIYAiABKAsyBi5Pd25lciJRCgVFdmVudBIKCgJpZBgBIAEoAxINCgV0aXRsZRgCIAEoCRItCglkYXRlX3RpbWUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiEKBU93bmVyEgoKAmlkGAEgASgDEgwKBG5hbWUYAiABKAkiaQoRQ3JlYXRlRXZlbnRQYXJhbXMSDQoFdGl0bGUYASABKAkSLQoJZGF0ZV90aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIWCg5pbnZpdGVkVXNlcklkcxgDIAMoAyJLChNDcmVhdGVFdmVudFJlc3BvbnNlEgwKAmlkGAEgASgDSAASFwoNZXJyb3JfbWVzc2FnZRgCIAEoCUgAQg0KC2lkX29yX2Vycm9yQgtaCXByb3RvLnBrZ2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_timestamp]);
+  fileDesc("CgtldmVudC5wcm90byI9ChtMaXN0RXZlbnRzV2l0aE93bmVyUmVzcG9uc2USHgoGZXZlbnRzGAEgAygLMg4uRXZlbnRBbmRPd25lciI9Cg1FdmVudEFuZE93bmVyEhUKBWV2ZW50GAEgASgLMgYuRXZlbnQSFQoFb3duZXIYAiABKAsyBi5Pd25lciJRCgVFdmVudBIKCgJpZBgBIAEoAxINCgV0aXRsZRgCIAEoCRItCglkYXRlX3RpbWUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiEKBU93bmVyEgoKAmlkGAEgASgDEgwKBG5hbWUYAiABKAkiaQoRQ3JlYXRlRXZlbnRQYXJhbXMSDQoFdGl0bGUYASABKAkSLQoJZGF0ZV90aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIWCg5pbnZpdGVkVXNlcklkcxgDIAMoAyIfChFEZWxldGVFdmVudFBhcmFtcxIKCgJpZBgBIAEoAyJLChNDcmVhdGVFdmVudFJlc3BvbnNlEgwKAmlkGAEgASgDSAASFwoNZXJyb3JfbWVzc2FnZRgCIAEoCUgAQg0KC2lkX29yX2Vycm9yQgtaCXByb3RvLnBrZ2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ListEventsWithOwnerResponse
@@ -130,6 +130,23 @@ export const CreateEventParamsSchema: GenMessage<CreateEventParams> = /*@__PURE_
   messageDesc(file_event, 4);
 
 /**
+ * @generated from message DeleteEventParams
+ */
+export type DeleteEventParams = Message<"DeleteEventParams"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
+};
+
+/**
+ * Describes the message DeleteEventParams.
+ * Use `create(DeleteEventParamsSchema)` to create a new message.
+ */
+export const DeleteEventParamsSchema: GenMessage<DeleteEventParams> = /*@__PURE__*/
+  messageDesc(file_event, 5);
+
+/**
  * @generated from message CreateEventResponse
  */
 export type CreateEventResponse = Message<"CreateEventResponse"> & {
@@ -156,5 +173,5 @@ export type CreateEventResponse = Message<"CreateEventResponse"> & {
  * Use `create(CreateEventResponseSchema)` to create a new message.
  */
 export const CreateEventResponseSchema: GenMessage<CreateEventResponse> = /*@__PURE__*/
-  messageDesc(file_event, 5);
+  messageDesc(file_event, 6);
 

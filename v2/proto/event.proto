@@ -29,6 +29,10 @@ message CreateEventParams {
     repeated int64 invitedUserIds = 3;
 }
 
+message DeleteEventParams {
+    int64 id = 1;
+}
+
 message CreateEventResponse {
     oneof id_or_error {
         int64 id = 1;
